@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:farmer_brand/UI/MyApp.dart';
@@ -83,11 +82,9 @@ void main() async{
   await Firebase.initializeApp().then((v){
     log("Firebase Connected");
   });
-
   FlutterError.onError=(details){
     log("message=>$details");
   };
-
   runApp(const MyApp());
 }
 
