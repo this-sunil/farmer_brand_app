@@ -82,8 +82,6 @@
         <key>NSPhotoLibraryUsageDescription</key>
         <string>This app needs photo library access.</string>
 
-
-
         <key>NSLocationWhenInUseUsageDescription</key>
         <string>Shows your location on the map and provides directions.</string>
         <key>UIBackgroundModes</key>

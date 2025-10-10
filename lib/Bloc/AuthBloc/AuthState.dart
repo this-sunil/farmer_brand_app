@@ -1,5 +1,5 @@
 part of "AuthBloc.dart";
-enum AuthStatus{initial,loading,login,register,error}
+enum AuthStatus{initial,loading,login,register,update,refresh,fetch,error}
 class AuthState extends Equatable{
   final AuthStatus? status;
   final String? msg;

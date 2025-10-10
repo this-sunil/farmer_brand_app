@@ -20,3 +20,22 @@ class RegisterEvent extends AuthEvent{
   // TODO: implement props
   List<Object?> get props => [name,phone,pass,state,city];
 }
+
+class UpdateEvent extends AuthEvent{
+  final String? name;
+  final String? phone;
+  final String? state;
+  final String? city;
+  final File? file;
+  UpdateEvent({ this.name, this.phone, this.state, this.city,this.file});
+  @override
+  // TODO: implement props
+  List<Object?> get props => [name,phone,state,city,file];
+}
+
+class FetchProfileEvent extends AuthEvent{
+  @override
+  // TODO: implement props
+  List<Object?> get props =>[];
+}
+

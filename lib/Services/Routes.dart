@@ -5,6 +5,7 @@ import 'package:farmer_brand/UI/Auth/VerifyScreen.dart';
 import 'package:farmer_brand/UI/Dashboard.dart';
 import 'package:farmer_brand/UI/SplashScreen.dart';
 import 'package:flutter/material.dart';
+import '../UI/Profile/UpdateProfile.dart';
 
 mixin AppRoutes {
 
@@ -16,6 +17,7 @@ mixin AppRoutes {
   static const String verifyOtp="/verify-otp";
   static const String playMusic="/play-music";
   static const String streamVideo="/stream-video";
+  static const String updateProfile="/update-profile";
 
   static Widget transitionsBuilder(
     BuildContext context,
@@ -67,7 +69,11 @@ mixin AppRoutes {
               phone: args['phone'],
               pass: args['pass'],
             ));
-
+      case updateProfile:
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => UpdateProfile(),
+          transitionsBuilder: transitionsBuilder,
+        );
       default:
         return PageRouteBuilder(
           transitionsBuilder: transitionsBuilder,
@@ -91,4 +97,5 @@ extension NavigatorExtension on BuildContext {
   Future<void> pop() async {
     return Navigator.pop(this);
   }
+
 }

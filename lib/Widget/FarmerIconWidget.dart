@@ -4,11 +4,13 @@ class FarmerIconWidget extends StatelessWidget {
   final String imgPath;
   final double? width;
   final double? height;
+  final bool? flag;
   const FarmerIconWidget({
     super.key,
     required this.imgPath,
     this.width,
     this.height,
+    this.flag
   });
 
   @override
@@ -28,7 +30,7 @@ class FarmerIconWidget extends StatelessWidget {
               shape: BoxShape.circle,
               image: DecorationImage(
                 fit: BoxFit.cover,
-                image: AssetImage(imgPath),
+                image: flag==true?NetworkImage(imgPath):AssetImage(imgPath),
               ),
             ),
           ),
