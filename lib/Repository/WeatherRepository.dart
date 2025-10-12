@@ -33,7 +33,7 @@ class WeatherRepository extends BaseWeatherRepository{
           return Left(Failure(msg: result["msg"], status: WeatherStatus.error));
         case 400:
           return Left(Failure(
-              msg: result["No Data Found"], status: WeatherStatus.error));
+              msg: result["msg"], status: WeatherStatus.error));
         default:
           return Left(Failure(msg: result["msg"], status: WeatherStatus.error));
       }
