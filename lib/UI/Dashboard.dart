@@ -1,5 +1,6 @@
 
 import 'package:circle_nav_bar/circle_nav_bar.dart';
+import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Screen/CartScreen.dart';
 import 'package:farmer_brand/Screen/CategoryScreen.dart';
 import 'package:farmer_brand/Screen/HomeScreen.dart';
@@ -50,6 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
     animation = Tween<double>(begin: 1.0, end: 1.2).animate(controller);
     context.read<AuthBloc>().add(FetchProfileEvent());
+    context.read<PostBloc>().add(FetchPostEvent());
     super.initState();
 
   }

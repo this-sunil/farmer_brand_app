@@ -1,3 +1,4 @@
+import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Bloc/WeatherBloc/WeatherBloc.dart';
 import 'package:farmer_brand/Model/PostItem.dart';
 import 'package:farmer_brand/Services/AnimatedFav.dart';
@@ -22,10 +23,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> scaleAnimation;
 
   static const String baseImg = "assets/icons";
-  bool flag=false;
-  List<PostItem> items=[
-    PostItem(title:  "Save Post", icons: Icon(Icons.save)),
-    PostItem(title: "Report", icons: Icon(Icons.report))
+  bool flag = false;
+  List<PostItem> items = [
+    PostItem(title: "Save Post", icons: Icon(Icons.save)),
+    PostItem(title: "Report", icons: Icon(Icons.report)),
   ];
   List<FarmerModel> images = [
     FarmerModel(
@@ -62,11 +63,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-
   @override
   void initState() {
     // TODO: implement initState
-    
+
     super.initState();
     pageController = PageController();
     context.read<WeatherBloc>().add(
@@ -292,107 +292,136 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: Column(
-                children: List.generate(
-                  10,
-                  (index) => Card(
-                    elevation: 10,
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 2),
-                          leading: CircleAvatar(
-                            maxRadius: 40,
-                            backgroundImage: AssetImage(
-                              "assets/icons/village-farmer.png",
-                            ),
-                          ),
-                          minLeadingWidth: 10,
-                          title: Text("Crops"),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                DateFormat(
-                                  "dd MMM yyyy,hh:mm a",
-                                ).format(DateTime.now()),
-                              ),
-                              Text("MH,Pune"),
-                            ],
-                          ),
-                          trailing: PopupMenuButton(
-                              icon: Icon(Icons.more_vert),
+            BlocBuilder<PostBloc, PostState>(
+              builder: (context, state) {
+                switch (state.status) {
+                  case PostStatus.loading:
+                    return Center(child: CircularProgressIndicator());
+                  case PostStatus.completed:
+                    return Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Column(
+                        children: List.generate(
+                          state.result?.result?.length??0,
+                          (index) {
+                            final item=state.result?.result?[index];
+                            return Card(
+                              elevation: 10,
                               color: Colors.white,
-                              offset: Offset(0, 60),
-                              elevation: 5,
-                              itemBuilder: (context)=>items.map((e)=>PopupMenuItem<List<PostItem>>(
-                              value: items,
-                              onTap: (){},
-                                  padding: EdgeInsets.symmetric(horizontal: 20,vertical: 0),
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: e.icons,
-                                title: Text(e.title),
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    leading: CircleAvatar(
+                                      maxRadius: 40,
+                                      backgroundImage: AssetImage("assets/icons/village-farmer.png"),
+                                    ),
+                                    minLeadingWidth: 10,
+                                    title: Text("${item?.postTitle}"),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          DateFormat(
+                                            "dd MMM yyyy,hh:mm a",
+                                          ).format(DateTime.parse("${item?.createdAt}")),
+                                        ),
+                                        Text("${item?.user?.state},${item?.user?.city}"),
+                                      ],
+                                    ),
+                                    trailing: PopupMenuButton(
+                                      icon: Icon(Icons.more_vert),
+                                      color: Colors.white,
+                                      offset: Offset(0, 60),
+                                      elevation: 5,
+                                      itemBuilder: (context) => items
+                                          .map(
+                                            (e) => PopupMenuItem<List<PostItem>>(
+                                          value: items,
+                                          onTap: () {},
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 0,
+                                          ),
+                                          child: ListTile(
+                                            contentPadding: EdgeInsets.zero,
+                                            leading: e.icons,
+                                            title: Text(e.title),
+                                          ),
+                                        ),
+                                      )
+                                          .toList(),
+                                    ),
+                                  ),
 
-                              ))).toList()),
-                        ),
-
-                         Container(
-                            height: 300,
-                            width: double.infinity,
-                            clipBehavior: Clip.hardEdge,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.zero,
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: AssetImage(
-                                  "assets/icons/village-farmer.png",
-                                ),
+                                  Container(
+                                    height: 300,
+                                    width: double.infinity,
+                                    clipBehavior: Clip.hardEdge,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.zero,
+                                      image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: NetworkImage(
+                                          "${item?.postUrl}",
+                                        ),
+                                      ),
+                                    ),
+                                    child: AnimatedOpacity(
+                                      duration: Duration(seconds: 1),
+                                      opacity: flag ? 1 : 0,
+                                      child: AnimatedFav(
+                                        scale: scaleAnimation,
+                                        child: IconButton(
+                                          onPressed: () {
+                                            if (flag) {
+                                              scaleController.reverse();
+                                            } else {
+                                              scaleController.forward();
+                                            }
+                                            setState(() {
+                                              flag = !flag;
+                                            });
+                                          },
+                                          color: Colors.white,
+                                          icon: Icon(
+                                            color: flag
+                                                ? Colors.red
+                                                : Colors.white,
+                                            flag
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Icon(HeroiconsSolid.heart),
+                                        Icon(HeroiconsSolid.share),
+                                        Icon(Icons.file_download_outlined),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            child: AnimatedOpacity(
-                                duration: Duration(seconds: 1),
-                                opacity: flag?1:0,child: AnimatedFav(scale: scaleAnimation, child: IconButton(
-
-                              onPressed: () {
-                                if(flag){
-                                  scaleController.reverse();
-                                }
-                                else{
-                                  scaleController.forward();
-                                }
-                                setState(() {
-                                  flag=!flag;
-                                });
-                              },
-                              color: Colors.white,
-                              icon: Icon(
-                                color: flag?Colors.red:Colors.white,
-                                flag
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                              ),
-                            ))),
+                            );
+                          },
                         ),
-                        Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Icon(HeroiconsSolid.heart),
-                              Icon(HeroiconsSolid.share),
-                              Icon(Icons.file_download_outlined),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+                      ),
+                    );
+                  default:
+                    return Container();
+                }
+              },
             ),
           ],
         ),

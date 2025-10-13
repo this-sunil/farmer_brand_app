@@ -215,7 +215,7 @@ class AuthRepository extends BaseAuthRepository {
   Future<Either<Failure, Success>> fetchProfileRepo({
     required String url,
     required Map<String, String>? header,
-    required Map<String, String> body,
+    required Map<String, dynamic> body,
   }) async {
     // TODO: implement fetchProfileRepo
     try {
