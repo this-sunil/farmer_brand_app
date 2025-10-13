@@ -46,7 +46,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
   /// This has to happen only once per app
   bool speechEnabled=false;
-  void _initSpeech() async {
+  void initSpeech() async {
     await speechToText.systemLocale();
    await speechToText.initialize().whenComplete(()=>log("Initialize Speech"));
 
@@ -58,13 +58,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   /// Each time to start a speech recognition session
-  void _startListening() async {
+  void startListening() async {
     await speechToText.listen(onResult: _onSpeechResult);
     log("Start Listen");
   }
 
 
-  void _stopListening() async {
+  void stopListening() async {
     await speechToText.stop();
     log("Stop Listen");
   }

@@ -11,7 +11,7 @@ class ChatState extends Equatable{
   }
 
   ChatState copyWith({ChatStatus? status, String? msg, required List<Map<String,String>> chats}){
-    return ChatState(status: status??status,msg: msg??msg,chats: chats??chats);
+    return ChatState(status: status??status,msg: msg??msg,chats: chats);
   }
 
   @override
