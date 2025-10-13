@@ -46,7 +46,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   equatable: ^2.0.7
   speech_to_text: ^7.3.0
-  zego_uikit_prebuilt_call: ^4.18.4
+  #zego_uikit_prebuilt_call: ^4.18.4
   flutter_dotenv: ^6.0.0
   permission_handler: ^12.0.1
   responsive_framework: ^1.5.1
