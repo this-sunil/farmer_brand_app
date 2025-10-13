@@ -1,4 +1,4 @@
-name: Flutter CI
+name: Build Android and iOS
 
 on:
   push:
@@ -7,19 +7,48 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    name: Build and Test
+  android:
+    name: Build Android
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          flutter-version: '3.35.0'  # Replace with your Flutter version
-          channel: stable
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build Android app
+        run: ./gradlew assembleDebug
+
+  ios:
+    name: Build iOS
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby for CocoaPods
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1
+
+      - name: Install dependencies
+        run: |
+          cd ios
+          pod install
+
+      - name: Build iOS app
+        run: |
+          xcodebuild -workspace ios/YourApp.xcworkspace \
+            -scheme YourApp \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            build
