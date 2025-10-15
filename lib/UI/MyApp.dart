@@ -1,8 +1,10 @@
 import 'package:farmer_brand/Bloc/AuthBloc/AuthBloc.dart';
+import 'package:farmer_brand/Bloc/BannerBloc/BannerBloc.dart';
 import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Bloc/WeatherBloc/WeatherBloc.dart';
 import 'package:farmer_brand/ChatBloc/ChatBloc.dart';
 import 'package:farmer_brand/Repository/AuthRepository.dart';
+import 'package:farmer_brand/Repository/BannerRepository.dart';
 import 'package:farmer_brand/Repository/PostRepository.dart';
 import 'package:farmer_brand/Repository/WeatherRepository.dart';
 import 'package:farmer_brand/Services/Routes.dart';
@@ -18,6 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(providers: [
+      BlocProvider(create: (context)=>BannerBloc(BannerRepository())),
       BlocProvider(create: (context)=>AuthBloc(AuthRepository())),
       BlocProvider<ChatBloc>(create: (context)=>ChatBloc()),
       BlocProvider(create: (context)=>WeatherBloc(WeatherRepository())),

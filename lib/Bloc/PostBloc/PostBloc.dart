@@ -14,6 +14,7 @@ class PostBloc extends Bloc<PostEvent,PostState>{
 
   _fetchPostApi(FetchPostEvent event,Emitter<PostState> emit) async{
     emit(state.copyWith(status: PostStatus.loading));
+    
     String url="${dotenv.env["BASE_URL"]}${dotenv.env["FETCH_POSTS"]}";
      final result=await repository.getAllPost(url:url, body:{},header: {
        "Content-Type":"application/json"

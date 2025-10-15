@@ -54,6 +54,7 @@ dependencies:
   weather_icons: ^3.0.0
   heroicons_flutter: ^0.4.0
   image_picker: ^1.2.0
+  skeletonsplus: ^0.0.1
 
 
 

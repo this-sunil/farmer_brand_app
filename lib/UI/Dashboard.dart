@@ -9,6 +9,7 @@ import 'package:farmer_brand/Screen/MenuScreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import '../Bloc/AuthBloc/AuthBloc.dart';
+import '../Bloc/BannerBloc/BannerBloc.dart';
 import '../Bloc/WeatherBloc/WeatherBloc.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -52,6 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     animation = Tween<double>(begin: 1.0, end: 1.2).animate(controller);
     context.read<AuthBloc>().add(FetchProfileEvent());
     context.read<PostBloc>().add(FetchPostEvent());
+    context.read<BannerBloc>().add(FetchBannerEvent());
     super.initState();
 
   }

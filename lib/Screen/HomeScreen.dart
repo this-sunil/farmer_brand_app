@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:farmer_brand/Bloc/BannerBloc/BannerBloc.dart';
 import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Bloc/WeatherBloc/WeatherBloc.dart';
 import 'package:farmer_brand/Model/PostItem.dart';
@@ -6,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:intl/intl.dart';
-import '../Model/FarmerModel.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,27 +31,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     PostItem(title: "Save Post", icons: Icon(Icons.save)),
     PostItem(title: "Report", icons: Icon(Icons.report)),
   ];
-  List<FarmerModel> images = [
-    FarmerModel(
-      title: "Village Grain Farmer",
-      description:
-          "Traditional farming techniques passed down generations, growing rice and wheat.",
-      photo: "$baseImg/village-farmer.png",
-    ),
-    FarmerModel(
-      title: "Fruit Orchard Owner",
-      description:
-          "Specializes in apples, mangoes, and berries with sustainable farming.",
-      photo: "$baseImg/fruits.png",
-    ),
-
-    FarmerModel(
-      title: "Organic Vegetable Farmer",
-      description:
-          "Grows seasonal organic vegetables in a small eco-friendly farm.",
-      photo: "$baseImg/farmer-garden.jpg",
-    ),
-  ];
+  // List<FarmerModel> images = [
+  //   FarmerModel(
+  //     title: "Village Grain Farmer",
+  //     description:
+  //         "Traditional farming techniques passed down generations, growing rice and wheat.",
+  //     photo: "$baseImg/village-farmer.png",
+  //   ),
+  //   FarmerModel(
+  //     title: "Fruit Orchard Owner",
+  //     description:
+  //         "Specializes in apples, mangoes, and berries with sustainable farming.",
+  //     photo: "$baseImg/fruits.png",
+  //   ),
+  //
+  //   FarmerModel(
+  //     title: "Organic Vegetable Farmer",
+  //     description:
+  //         "Grows seasonal organic vegetables in a small eco-friendly farm.",
+  //     photo: "$baseImg/farmer-garden.jpg",
+  //   ),
+  // ];
 
   int currentIndex = 0;
   late PageController pageController;
@@ -77,35 +80,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: Duration(seconds: 1),
     );
     animationController.forward();
-    animationController.addStatusListener((status) async {
-      if (status == AnimationStatus.completed) {
-        if (currentIndex < images.length - 1) {
-          currentIndex++;
-          pageController.animateToPage(
-            currentIndex,
-            duration: Duration(seconds: 1),
-            curve: Curves.fastOutSlowIn,
-          );
-          animationController
-            ..reset()
-            ..forward();
-        } else {
-          Future.delayed(Duration(seconds: 1), () {
-            setState(() {
-              currentIndex = 0;
-              pageController.animateToPage(
-                currentIndex,
-                duration: Duration(milliseconds: 300),
-                curve: Curves.fastOutSlowIn,
-              );
-              animationController
-                ..reset()
-                ..forward();
-            });
-          });
-        }
-      }
-    });
+
     scaleController = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
@@ -132,81 +107,130 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         scrollDirection: Axis.vertical,
         child: Column(
           children: [
-            SizedBox(
-              height: 250,
-              child: PageView.builder(
-                controller: pageController,
-                itemCount: images.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
+            BlocConsumer<BannerBloc,BannerState>(
+                listener: (context,state){
+                  switch(state.status){
+                    case BannerStatus.completed:
+                      animationController.addStatusListener((status) async {
+                        if (status == AnimationStatus.completed) {
+                          int length = state.model?.result?.length ?? 0;
+                          log("Banner length=>$length");
+                            if (currentIndex < length - 1) {
+                              currentIndex++;
+                              pageController.animateToPage(
+                                currentIndex,
+                                duration: Duration(seconds: 1),
+                                curve: Curves.fastOutSlowIn,
+                              );
+                              animationController
+                                ..reset()
+                                ..forward();
+                            } else {
+                              Future.delayed(Duration(seconds: 1), () {
+                                setState(() {
+                                  currentIndex = 0;
+                                  pageController.animateToPage(
+                                    currentIndex,
+                                    duration: Duration(milliseconds: 300),
+                                    curve: Curves.fastOutSlowIn,
+                                  );
+                                  animationController
+                                    ..reset()
+                                    ..forward();
+                                });
+                              });
+                            }
+                        }
+                      });
+                      break;
+                    default:
+                      break;
+                  }
                 },
-                itemBuilder: (context, index) {
-                  final item = images[index];
-                  return Hero(
-                    tag: item.title,
-                    flightShuttleBuilder:
-                        (
-                          BuildContext flightContext,
-                          Animation<double> animation,
-                          HeroFlightDirection flightDirection,
-                          BuildContext fromHeroContext,
-                          BuildContext toHeroContext,
-                        ) {
-                          return ScaleTransition(
-                            scale: CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeInOut,
-                            ),
-                            child: flightDirection == HeroFlightDirection.push
-                                ? toHeroContext.widget
-                                : fromHeroContext.widget,
-                          );
-                        },
-                    transitionOnUserGestures: true,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Stack(
-                          children: [
-                            Container(
-                              width: constraints.maxWidth,
-                              height: constraints.maxHeight,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage(item.photo),
-                                  fit: BoxFit.cover,
-                                ),
+                builder: (context,state){
+              switch(state.status){
+                case BannerStatus.loading:
+                  return Padding(padding: EdgeInsets.all(10),child: Center(child: CircularProgressIndicator()));
+
+                case BannerStatus.completed:
+                  return SizedBox(
+                    height: 250,
+                    child: PageView.builder(
+                      controller: pageController,
+                      itemCount: state.model?.result?.length??0,
+                      onPageChanged: (index) {
+                        setState(() {
+                          currentIndex = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        final item = state.model?.result?[index];
+                        return Hero(
+                          tag: '${item?.title.toString()}',
+                          flightShuttleBuilder:
+                              (
+                              BuildContext flightContext,
+                              Animation<double> animation,
+                              HeroFlightDirection flightDirection,
+                              BuildContext fromHeroContext,
+                              BuildContext toHeroContext,
+                              ) {
+                            return ScaleTransition(
+                              scale: CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeInOut,
                               ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.transparent, Colors.black45],
-                                  stops: [0.6, 1.0],
-                                ),
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.transparent, Colors.black45],
-                                  stops: [0.6, 1.0],
-                                ),
-                              ),
-                            ),
-                          ],
+                              child: flightDirection == HeroFlightDirection.push
+                                  ? toHeroContext.widget
+                                  : fromHeroContext.widget,
+                            );
+                          },
+                          transitionOnUserGestures: true,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Stack(
+                                children: [
+                                  Container(
+                                    width: constraints.maxWidth,
+                                    height: constraints.maxHeight,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: NetworkImage('${item?.photo.toString()}'),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [Colors.transparent, Colors.black45],
+                                        stops: [0.6, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [Colors.transparent, Colors.black45],
+                                        stops: [0.6, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         );
                       },
                     ),
                   );
-                },
-              ),
-            ),
+                default:return Container();
+              }
+            }),
 
             BlocBuilder<WeatherBloc, WeatherState>(
               builder: (context, state) {
@@ -294,133 +318,126 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             BlocBuilder<PostBloc, PostState>(
               builder: (context, state) {
-                switch (state.status) {
-                  case PostStatus.loading:
-                    return Center(child: CircularProgressIndicator());
-                  case PostStatus.completed:
-                    return Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Column(
-                        children: List.generate(
-                          state.result?.result?.length??0,
+                return  Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Column(
+                    children: List.generate(
+                      state.result?.result?.length??0,
                           (index) {
-                            final item=state.result?.result?[index];
-                            return Card(
-                              elevation: 10,
-                              color: Colors.white,
-                              child: Column(
-                                children: [
-                                  ListTile(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 2,
+                        final item=state.result?.result?[index];
+                        return Card(
+                          elevation: 10,
+                          color: Colors.white,
+                          child: Column(
+                            children: [
+                              ListTile(
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
+                                leading: CircleAvatar(
+                                  maxRadius: 40,
+                                  backgroundImage: AssetImage("assets/icons/village-farmer.png"),
+                                ),
+                                minLeadingWidth: 10,
+                                title: Text("${item?.postTitle}"),
+                                subtitle: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      DateFormat(
+                                        "dd MMM yyyy,hh:mm a",
+                                      ).format(DateTime.parse("${item?.createdAt}")),
                                     ),
-                                    leading: CircleAvatar(
-                                      maxRadius: 40,
-                                      backgroundImage: AssetImage("assets/icons/village-farmer.png"),
-                                    ),
-                                    minLeadingWidth: 10,
-                                    title: Text("${item?.postTitle}"),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          DateFormat(
-                                            "dd MMM yyyy,hh:mm a",
-                                          ).format(DateTime.parse("${item?.createdAt}")),
-                                        ),
-                                        Text("${item?.user?.state},${item?.user?.city}"),
-                                      ],
-                                    ),
-                                    trailing: PopupMenuButton(
-                                      icon: Icon(Icons.more_vert),
-                                      color: Colors.white,
-                                      offset: Offset(0, 60),
-                                      elevation: 5,
-                                      itemBuilder: (context) => items
-                                          .map(
-                                            (e) => PopupMenuItem<List<PostItem>>(
-                                          value: items,
-                                          onTap: () {},
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                            vertical: 0,
-                                          ),
-                                          child: ListTile(
-                                            contentPadding: EdgeInsets.zero,
-                                            leading: e.icons,
-                                            title: Text(e.title),
-                                          ),
-                                        ),
-                                      )
-                                          .toList(),
-                                    ),
-                                  ),
-
-                                  Container(
-                                    height: 300,
-                                    width: double.infinity,
-                                    clipBehavior: Clip.hardEdge,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.zero,
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: NetworkImage(
-                                          "${item?.postUrl}",
-                                        ),
+                                    Text("${item?.user?.state},${item?.user?.city}"),
+                                  ],
+                                ),
+                                trailing: PopupMenuButton(
+                                  icon: Icon(Icons.more_vert),
+                                  color: Colors.white,
+                                  offset: Offset(0, 60),
+                                  elevation: 5,
+                                  itemBuilder: (context) => items
+                                      .map(
+                                        (e) => PopupMenuItem<List<PostItem>>(
+                                      value: items,
+                                      onTap: () {},
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 0,
+                                      ),
+                                      child: ListTile(
+                                        contentPadding: EdgeInsets.zero,
+                                        leading: e.icons,
+                                        title: Text(e.title),
                                       ),
                                     ),
-                                    child: AnimatedOpacity(
-                                      duration: Duration(seconds: 1),
-                                      opacity: flag ? 1 : 0,
-                                      child: AnimatedFav(
-                                        scale: scaleAnimation,
-                                        child: IconButton(
-                                          onPressed: () {
-                                            if (flag) {
-                                              scaleController.reverse();
-                                            } else {
-                                              scaleController.forward();
-                                            }
-                                            setState(() {
-                                              flag = !flag;
-                                            });
-                                          },
-                                          color: Colors.white,
-                                          icon: Icon(
-                                            color: flag
-                                                ? Colors.red
-                                                : Colors.white,
-                                            flag
-                                                ? Icons.favorite
-                                                : Icons.favorite_border,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                      children: [
-                                        Icon(HeroiconsSolid.heart),
-                                        Icon(HeroiconsSolid.share),
-                                        Icon(Icons.file_download_outlined),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                  )
+                                      .toList(),
+                                ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  default:
-                    return Container();
-                }
+
+                              Container(
+                                height: 300,
+                                width: double.infinity,
+                                clipBehavior: Clip.hardEdge,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.zero,
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(
+                                      "${item?.postUrl}",
+                                    ),
+                                  ),
+                                ),
+                                child: AnimatedOpacity(
+                                  duration: Duration(seconds: 1),
+                                  opacity: flag ? 1 : 0,
+                                  child: AnimatedFav(
+                                    scale: scaleAnimation,
+                                    child: IconButton(
+                                      onPressed: () {
+                                        if (flag) {
+                                          scaleController.reverse();
+                                        } else {
+                                          scaleController.forward();
+                                        }
+                                        setState(() {
+                                          flag = !flag;
+                                        });
+                                      },
+                                      color: Colors.white,
+                                      icon: Icon(
+                                        color: flag
+                                            ? Colors.red
+                                            : Colors.white,
+                                        flag
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Icon(HeroiconsSolid.heart),
+                                    Icon(HeroiconsSolid.share),
+                                    Icon(Icons.file_download_outlined),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+
+                  ),
+                ));
               },
             ),
           ],
@@ -439,7 +456,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       width: 140,
       child: Card(
         color: color,
-
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Column(
