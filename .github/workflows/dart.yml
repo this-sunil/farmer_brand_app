@@ -1,10 +1,9 @@
 name: "Build & Release"
 
 on:
-  pull_request:
-    branches: [main, master]
   push:
-    branches: [main, master, develop]
+    tags:
+      - 'v*.*.*'  # Run only when pushing tags like v1.0.0
 
 jobs:
   build:
@@ -23,30 +22,30 @@ jobs:
           channel: stable
           architecture: x64
 
-      - run: flutter clean && flutter pub get && flutter build apk --release
-
-
-      - name: Build APK
-        run: flutter build apk --release --split-per-abi
+      - name: Get dependencies & build APKs
+        run: |
+          flutter clean
+          flutter pub get
+          flutter build apk --release --split-per-abi
 
       - name: Build IPA
         run: |
           flutter build ios --no-codesign
           cd build/ios/iphoneos
           mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
+          cp -r Runner.app Payload/
           zip -r app.ipa Payload
+          mv app.ipa ../
 
       - name: List files
         run: ls -R build/
 
-      - name: Release
+      - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: |
             build/app/outputs/apk/release/*.apk
             build/ios/iphoneos/app.ipa
-          tag: v1.0.${{ github.run_number }}
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          name: Release ${{ github.ref_name }}
