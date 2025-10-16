@@ -1,10 +1,12 @@
 import 'package:farmer_brand/Bloc/AuthBloc/AuthBloc.dart';
 import 'package:farmer_brand/Bloc/BannerBloc/BannerBloc.dart';
+import 'package:farmer_brand/Bloc/NotificationBloc/NotificationBloc.dart';
 import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Bloc/WeatherBloc/WeatherBloc.dart';
 import 'package:farmer_brand/ChatBloc/ChatBloc.dart';
 import 'package:farmer_brand/Repository/AuthRepository.dart';
 import 'package:farmer_brand/Repository/BannerRepository.dart';
+import 'package:farmer_brand/Repository/NotificationRepository.dart';
 import 'package:farmer_brand/Repository/PostRepository.dart';
 import 'package:farmer_brand/Repository/WeatherRepository.dart';
 import 'package:farmer_brand/Services/Routes.dart';
@@ -23,6 +25,7 @@ class MyApp extends StatelessWidget {
       BlocProvider(create: (context)=>BannerBloc(BannerRepository())),
       BlocProvider(create: (context)=>AuthBloc(AuthRepository())),
       BlocProvider<ChatBloc>(create: (context)=>ChatBloc()),
+      BlocProvider(create: (context)=>NotificationBloc(NotificationRepository())),
       BlocProvider(create: (context)=>WeatherBloc(WeatherRepository())),
       BlocProvider(create: (context)=>PostBloc(PostRepository()))
     ], child: MaterialApp(
