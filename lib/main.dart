@@ -82,6 +82,8 @@ void main() async{
   await Firebase.initializeApp().then((v){
     log("Firebase Connected");
   });
+
+
   FlutterError.onError=(details){
     log("message=>$details");
   };

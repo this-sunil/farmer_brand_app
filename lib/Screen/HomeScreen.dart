@@ -10,6 +10,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:intl/intl.dart';
 
+import 'VideoPage.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -300,6 +302,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     return Container();
                 }
               },
+            ),
+            SizedBox(
+              height: 250,
+              child: VideoPage(
+              url: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+              ),
             ),
             Padding(
               padding: EdgeInsets.all(10),

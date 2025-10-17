@@ -76,7 +76,9 @@ class _LoginScreenState extends State<LoginScreen> with HelperMixin{
                     }, child: Text("Register",style: TextStyle(color: Colors.blue,decoration: TextDecoration.underline,decorationColor: Colors.blue))),
                   ],
                 )),
-                BlocConsumer<AuthBloc,AuthState>(builder: (context,state){
+                BlocConsumer<AuthBloc,AuthState>(
+                    listenWhen: (prev,current)=>prev.status!=current.status,
+                    builder: (context,state){
                   switch(state.status){
                     case AuthStatus.loading:
                       return Center(child: CircularProgressIndicator());
@@ -109,6 +111,17 @@ class _LoginScreenState extends State<LoginScreen> with HelperMixin{
                       break;
                     case AuthStatus.error:
                       log("Error=>${state.msg}");
+                      showDialog(context: context, builder: (context){
+                        return AlertDialog(
+                          title: Text("${state.msg}"),
+                          actions: [
+                            TextButton(onPressed: (){
+                              context.pop();
+                            }, child: Text("Ok"))
+                          ],
+                        );
+                      });
+                      break;
                     default:
                       break;
                   }
