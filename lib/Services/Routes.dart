@@ -1,4 +1,5 @@
 import 'package:farmer_brand/Chatboat.dart';
+import 'package:farmer_brand/Screen/OverViewScreen.dart';
 import 'package:farmer_brand/UI/Auth/LoginScreen.dart';
 import 'package:farmer_brand/UI/Auth/RegisterScreen.dart';
 import 'package:farmer_brand/UI/Auth/VerifyScreen.dart';
@@ -18,6 +19,7 @@ mixin AppRoutes {
   static const String playMusic="/play-music";
   static const String streamVideo="/stream-video";
   static const String updateProfile="/update-profile";
+  static const String overView="/overview";
 
   static Widget transitionsBuilder(
     BuildContext context,
@@ -60,6 +62,18 @@ mixin AppRoutes {
               ChatScreen(),
           transitionsBuilder: transitionsBuilder,
         );
+      case overView:
+        final  args=settings.arguments as Map<String,dynamic>;
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              OverViewScreen(
+                id: args['id'],
+                name: args['name'],
+                imgPath: args['imgPath'],
+                price: args['price'],
+              ),
+          transitionsBuilder: transitionsBuilder,
+        );
       case verifyOtp:
         final args=settings.arguments as Map<String,dynamic>;
         return PageRouteBuilder(
@@ -78,7 +92,7 @@ mixin AppRoutes {
         return PageRouteBuilder(
           transitionsBuilder: transitionsBuilder,
           pageBuilder: (context, animation, secondaryAnimation) =>
-              Scaffold(body: Center(child: Text("No Page Found !!!"))),
+              DashboardScreen(),
         );
     }
   }

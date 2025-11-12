@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:farmer_brand/Services/LocalStorage.dart';
+import 'package:farmer_brand/UI/Dashboard.dart';
 import 'package:http/http.dart';
 import 'package:farmer_brand/Model/FarmerModel.dart';
 import 'package:farmer_brand/Services/Routes.dart';
 import 'package:flutter/material.dart';
 import '../Model/User.dart';
+import 'PaymentScreen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,28 +46,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   ];
   int currentIndex=0;
 
-  Future<List<User>> fetchUsers() async {
-    final response = await get(Uri.parse("https://jsonplaceholder.typicode.com/users"),
-      headers: {
-        "Accept": "application/json",
-      },
-    );
-
-    log("Message : ${response.statusCode}");
-    if(response.statusCode == 200){
-      log("Response=>${response.statusCode}");
-      final List<dynamic> data = jsonDecode(response.body);
-      final List<User> user=data.map((e)=>User.fromJson(e)).toList();
-      return user;
-    }
-    else {
-      throw Exception('Failed to load users');
-    }
-  }
 
   @override
   void initState() {
-    super.initState();
     pageController = PageController();
     animationController = AnimationController(
       vsync: this,
@@ -86,18 +69,21 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         } else {
           log("Reached the last page");
           //fetchUsers();
-          String? uid=await localStorage.getUID();
-          print("User=>$uid");
-          if(uid==null){
-            context.pushReplace(AppRoutes.login);
-          }
-          else{
-            context.pushReplace(AppRoutes.dashboard);
-          }
+          //String? uid=await localStorage.getUID();
+          //print("User=>$uid");
+          // if(uid==null){
+          //   context.pushReplace(AppRoutes.login);
+          // }
+          // else{
+          //   context.pushReplace(AppRoutes.dashboard);
+          // }
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>DashboardScreen()));
         }
       }
     });
     animationController.forward();
+    super.initState();
+
   }
 
 

@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'package:farmer_brand/Services/FirebaseApi.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:farmer_brand/UI/MyApp.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'firebase_options.dart';
 
 // armStrongNumber(){
 //   int number=153;
@@ -79,11 +81,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp().then((v){
+  await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+  ).then((v){
     log("Firebase Connected");
   });
-
-
+  await FirebaseApi.instance.init();
   FlutterError.onError=(details){
     log("message=>$details");
   };

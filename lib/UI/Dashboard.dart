@@ -1,6 +1,4 @@
-
 import 'package:circle_nav_bar/circle_nav_bar.dart';
-import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Screen/CartScreen.dart';
 import 'package:farmer_brand/Screen/CategoryScreen.dart';
 import 'package:farmer_brand/Screen/HomeScreen.dart';
@@ -19,11 +17,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen>
-    with SingleTickerProviderStateMixin {
+class _DashboardScreenState extends State<DashboardScreen> {
   int currentIndex = 0;
-  late AnimationController controller;
-  late Animation<double> animation;
   getWeatherCondition(clouds, weatherId) {
     if (weatherId >= 200 && weatherId < 300) {
       return "Thunderstorm";
@@ -43,25 +38,20 @@ class _DashboardScreenState extends State<DashboardScreen>
       return "Unknown Weather";
     }
   }
+
   @override
   void initState() {
     // TODO: implement initState
-    controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-    animation = Tween<double>(begin: 1.0, end: 1.2).animate(controller);
+
     context.read<AuthBloc>().add(FetchProfileEvent());
-    context.read<PostBloc>().add(FetchPostEvent());
     context.read<BannerBloc>().add(FetchBannerEvent());
     super.initState();
-
   }
-  bool flag=false;
+
   @override
   void dispose() {
     // TODO: implement dispose
-    controller.dispose();
+
     super.dispose();
   }
 
@@ -69,66 +59,85 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         leading: Padding(
           padding: EdgeInsets.all(4),
           child: CircleAvatar(
-
             backgroundImage: AssetImage("assets/icons/farmer-garden.jpg"),
           ),
         ),
         centerTitle: false,
-        title:BlocBuilder<WeatherBloc,WeatherState>(builder: (context,state){
-          switch(state.status){
-            case WeatherStatus.completed:
-              return Padding(padding: EdgeInsets.all(10),child:
-              Column(
-                crossAxisAlignment:CrossAxisAlignment.start,
-                children: [
+        title: BlocBuilder<WeatherBloc, WeatherState>(
+          builder: (context, state) {
+            switch (state.status) {
+              case WeatherStatus.completed:
+                return Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (bounds) =>
+                            LinearGradient(
+                              colors: [
+                                Colors.blue,
+                                Colors.purple,
+                                Colors.pink,
+                                Colors.purple,
+                              ],
+                            ).createShader(
+                              Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                            ),
+                        blendMode: BlendMode.srcIn,
+                        child: Text(
+                          state.model?.name ?? 'Unknown Location',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
 
-                  ShaderMask(
-                      shaderCallback: (bounds) => LinearGradient(
-                        colors: [Colors.blue, Colors.purple,Colors.pink,Colors.purple],
-                      ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
-                      blendMode: BlendMode.srcIn,
-                      child:Text(
-                        state.model?.name ?? 'Unknown Location',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-
-                          fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      )),
+                      ),
 
-                  ShaderMask(
-                      shaderCallback: (bounds) => LinearGradient(
-                        colors: [Colors.blue, Colors.purple,Colors.pink,Colors.purple],
-                      ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
-                      blendMode: BlendMode.srcIn,
-                      child:Text(
-                        getWeatherCondition(
-                          state.model?.clouds?.all,
-                          state.model?.weather?[0].id,
-                        ),
-                        style: const TextStyle(
-                          color: Colors.black,
+                      ShaderMask(
+                        shaderCallback: (bounds) =>
+                            LinearGradient(
+                              colors: [
+                                Colors.blue,
+                                Colors.purple,
+                                Colors.pink,
+                                Colors.purple,
+                              ],
+                            ).createShader(
+                              Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                            ),
+                        blendMode: BlendMode.srcIn,
+                        child: Text(
+                          getWeatherCondition(
+                            state.model?.clouds?.all,
+                            state.model?.weather?[0].id,
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
 
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      )),
-                  const SizedBox(height: 10),
-                ],
-              ));
-            default:
-              return Container();
-          }
-        }),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                );
+              default:
+                return Container();
+            }
+          },
+        ),
 
         actions: [
-          IconButton(onPressed: (){}, icon: Icon(HeroiconsSolid.language)),
-          IconButton(onPressed: (){}, icon: Icon(HeroiconsSolid.bell))
+          IconButton(onPressed: () {}, icon: Icon(HeroiconsSolid.language)),
+          IconButton(onPressed: () {}, icon: Icon(HeroiconsSolid.bell)),
         ],
       ),
       body: IndexedStack(
@@ -138,12 +147,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       bottomNavigationBar: CircleNavBar(
         height: 90,
         gradient: LinearGradient(
-            begin: AlignmentGeometry.topLeft,
-            end: AlignmentGeometry.bottomRight,
-            colors: [
-              Colors.deepPurpleAccent,
-              Colors.red
-            ]),
+          begin: AlignmentGeometry.topLeft,
+          end: AlignmentGeometry.bottomRight,
+          colors: [Colors.deepPurpleAccent, Colors.red],
+        ),
         onTap: (index) {
           setState(() {
             currentIndex = index;
