@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:developer';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:farmer_brand/Bloc/CartBloc/CartBloc.dart';
 import 'package:flutter/material.dart';
 import 'package:farmer_brand/Model/CategoryModel.dart';
@@ -56,25 +57,33 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:BlocListener<ProductBloc,ProductState>(listener: (context,state){
-        switch(state.status){
-          case ProductStatus.completed:
-            context.read<CartBloc>().add(FetchCartEvent());
-          default:
-            break;
-        }
-      },child:  BlocBuilder<CartBloc, CartState>(
-        builder: (context, state) {
-          final isLoading = state.status == CartStatus.loading;
-          final productItem = state.cartModel?.result ?? [];
+      body: BlocListener<ProductBloc, ProductState>(
+        listener: (context, state) {
+          switch (state.status) {
+            case ProductStatus.completed:
+              context.read<CartBloc>().add(FetchCartEvent());
+            default:
+              break;
+          }
+        },
+        child: BlocBuilder<CartBloc, CartState>(
+          builder: (context, state) {
+            final isLoading = state.status == CartStatus.loading;
+            final productItem = state.cartModel?.result ?? [];
+            final totalPrice = productItem.fold(
+              0,
+              (sum, e) =>
+                  sum +
+                  int.parse(e.productPrice.toString()) *
+                      int.parse(e.productQty.toString()),
+            );
 
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return  Card(
-
+            return Skeleton(
+              isLoading: isLoading,
+              skeleton: ListView.builder(
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,7 +94,8 @@ class _CartScreenState extends State<CartScreen> {
                           margin: EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: Colors.grey,
-                            borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         Expanded(
                           child: Padding(
@@ -102,140 +112,264 @@ class _CartScreenState extends State<CartScreen> {
                                   width: double.infinity,
                                   height: 20,
                                   color: Colors.grey,
-                                )
+                                ),
                               ],
                             ),
                           ),
                         ),
-
                       ],
                     ),
                   );
-              },
-            ),
-            child: ListView.builder(
-              itemCount: productItem.length,
-              itemBuilder: (context, index) {
-                final item = productItem[index];
-                if (productItem.isEmpty) {
-                  return Center(child: Text("No Data Found !!!"));
-                }
-                return Dismissible(
-                  key: Key(productItem[index].pid.toString()),
-                  onDismissed: (direction) {},
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Icon(Icons.delete, color: Colors.white),
-                  ),
-                  resizeDuration: Duration(seconds: 1),
-                  child: Card(
-                      color: Colors.white,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            margin: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                  item.productPhoto.toString(),
+                },
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: productItem.length,
+                      itemBuilder: (context, index) {
+                        final item = productItem[index];
+                        if (productItem.isEmpty) {
+                          return Center(child: Text("No Data Found !!!"));
+                        }
+                        return Dismissible(
+                          key: Key(productItem[index].pid.toString()),
+                          onDismissed: (direction) {},
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Icon(Icons.delete, color: Colors.white),
+                          ),
+                          resizeDuration: Duration(seconds: 1),
+                          child: Card(
+                            color: Colors.white,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  margin: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(
+                                        item.productPhoto.toString(),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.productTitle.toString(),
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Qty: ${item.productQty} × ${item.productPrice}",
+                                        ),
+                                        Text(
+                                          "\u{20b9} ${(double.parse(item.productPrice.toString()) * double.parse(item.productQty.toString())).toStringAsFixed(2)}",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Card(
+                                    elevation: 10,
+                                    color: Colors.deepOrangeAccent,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () {
+                                            int qty =
+                                                int.parse(
+                                                  item.productQty.toString(),
+                                                ) -
+                                                1;
+                                            log("Remove qty=>$qty");
+                                            context.read<ProductBloc>().add(
+                                              AddQuantity(
+                                                pid: item.pid.toString(),
+                                                qty: qty,
+                                              ),
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.remove_circle,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        Text(
+                                          "${item.productQty}",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            int qty =
+                                                int.parse(
+                                                  item.productQty.toString(),
+                                                ) +
+                                                1;
+                                            log("Remove qty=>$qty");
+                                            context.read<ProductBloc>().add(
+                                              AddQuantity(
+                                                pid: item.pid.toString(),
+                                                qty: qty,
+                                              ),
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.add_circle,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Expanded(
-                            child: Padding(
+                        );
+                      },
+                    ),
+                  ),
+                  Padding(padding: EdgeInsetsGeometry.all(8),child: Card(
+                    color: Colors.white,
+                    child: DottedBorder(
+                      options: RectDottedBorderOptions(
+                        dashPattern: [5, 4], // Length of dash, length of space
+                        strokeWidth: 1,
+                        color: Colors.black,
+                        padding: EdgeInsets.all(8),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsetsGeometry.all(8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
                               padding: EdgeInsets.all(8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceAround,
                                 children: [
                                   Text(
-                                    item.productTitle.toString(),
+                                    "Amount",
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  Text("\u{20b9} ${item.productPrice}"),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Card(
-                              elevation: 10,
-                              color: Colors.deepOrangeAccent,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      int qty =
-                                          int.parse(
-                                            item.productQty.toString(),
-                                          ) -
-                                              1;
-                                      log("Remove qty=>$qty");
-                                      context.read<ProductBloc>().add(
-                                        AddQuantity(
-                                          pid: item.pid.toString(),
-                                          qty: qty,
-                                        ),
-                                      );
-                                    },
-                                    icon: Icon(
-                                      Icons.remove_circle,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                  Spacer(),
                                   Text(
-                                    "${item.productQty}",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      int qty =
-                                          int.parse(
-                                            item.productQty.toString(),
-                                          ) +
-                                              1;
-                                      log("Remove qty=>$qty");
-                                      context.read<ProductBloc>().add(
-                                        AddQuantity(
-                                          pid: item.pid.toString(),
-                                          qty: qty,
-                                        ),
-                                      );
-                                    },
-                                    icon: Icon(
-                                      Icons.add_circle,
-                                      color: Colors.white,
+                                    " \u{20b9}$totalPrice",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceAround,
+                                children: [
+                                  Text(
+                                    "Delivery Charges",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    "\u{20b9} 50",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceAround,
+                                children: [
+                                  Text(
+                                    "Total Amount",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    "\u{20b9} ${totalPrice + 50}",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                  )),
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    margin: EdgeInsets.all(8),
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        )),
+                        onPressed: (){}, child: Text("Proceed",style: TextStyle(color: Colors.white))),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
 
-                );
-              },
-            ),
-          );
-        },
-      )),
       // body: ListView.builder(
       //   scrollDirection: Axis.vertical,
       //   itemCount: category.length,
