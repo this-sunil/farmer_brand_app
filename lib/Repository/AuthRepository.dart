@@ -8,7 +8,6 @@ import 'package:farmer_brand/Model/Success.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
-import 'package:http_parser/http_parser.dart';
 
 abstract class BaseAuthRepository {
   Future<Either<Failure, Success>> loginRepo({
@@ -113,7 +112,7 @@ class AuthRepository extends BaseAuthRepository {
               Success(
                 result: results,
                 msg: results.msg,
-                status: AuthStatus.login,
+                status: AuthStatus.register,
               ),
             );
           } else {

@@ -1,13 +1,9 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:farmer_brand/Services/LocalStorage.dart';
 import 'package:farmer_brand/UI/Dashboard.dart';
-import 'package:http/http.dart';
 import 'package:farmer_brand/Model/FarmerModel.dart';
 import 'package:farmer_brand/Services/Routes.dart';
 import 'package:flutter/material.dart';
-import '../Model/User.dart';
-import 'PaymentScreen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -90,6 +86,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void dispose() {
     // TODO: implement dispose
+    animationController.removeListener((){});
     animationController.dispose();
     pageController.dispose();
     super.dispose();

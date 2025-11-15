@@ -1,21 +1,24 @@
 import 'package:farmer_brand/Bloc/AuthBloc/AuthBloc.dart';
 import 'package:farmer_brand/Bloc/BannerBloc/BannerBloc.dart';
+import 'package:farmer_brand/Bloc/CartBloc/CartBloc.dart';
 import 'package:farmer_brand/Bloc/NotificationBloc/NotificationBloc.dart';
-import 'package:farmer_brand/Bloc/PostBloc/PostBloc.dart';
 import 'package:farmer_brand/Bloc/ProductBloc/ProductBloc.dart';
 import 'package:farmer_brand/Bloc/WeatherBloc/WeatherBloc.dart';
 import 'package:farmer_brand/ChatBloc/ChatBloc.dart';
 import 'package:farmer_brand/Repository/AuthRepository.dart';
 import 'package:farmer_brand/Repository/BannerRepository.dart';
+import 'package:farmer_brand/Repository/CartRepository.dart';
 import 'package:farmer_brand/Repository/NotificationRepository.dart';
-import 'package:farmer_brand/Repository/PostRepository.dart';
 import 'package:farmer_brand/Repository/ProductRepository.dart';
 import 'package:farmer_brand/Repository/WeatherRepository.dart';
 import 'package:farmer_brand/Services/Routes.dart';
 import 'package:flutter/material.dart';
 import 'package:farmer_brand/UI/SplashScreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+
+import '../Bloc/ProductByIdBloc/ProductByIdBloc.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -29,8 +32,11 @@ class MyApp extends StatelessWidget {
       BlocProvider<ChatBloc>(create: (context)=>ChatBloc()),
       BlocProvider(create: (context)=>NotificationBloc(NotificationRepository())),
       BlocProvider(create: (context)=>WeatherBloc(WeatherRepository())),
+
      // BlocProvider(create: (context)=>PostBloc(PostRepository())),
-      BlocProvider(create: (context)=>ProductBloc(ProductRepo()))
+      BlocProvider(create: (context)=>ProductBloc(ProductRepo())),
+      BlocProvider(create: (context)=>ProductByIdBloc(ProductRepo())),
+      BlocProvider(create: (context)=>CartBloc(CartRepository()))
     ], child: MaterialApp(
       builder: (context, child) => ResponsiveBreakpoints.builder(
         child: child!,
@@ -46,6 +52,9 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.initialRoute,
       onGenerateRoute: AppRoutes.onGenerateRoute,
       theme: ThemeData(
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme
+        ),
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.white,

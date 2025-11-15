@@ -65,8 +65,6 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 8.1)
     - nanopb (~> 3.30910.0)
   - Flutter (1.0.0)
-  - flutter_local_notifications (0.0.1):
-    - Flutter
   - google_sign_in_ios (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -142,7 +140,6 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
-  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -184,8 +181,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
-  flutter_local_notifications:
-    :path: ".symlinks/plugins/flutter_local_notifications/ios"
   google_sign_in_ios:
     :path: ".symlinks/plugins/google_sign_in_ios/darwin"
   image_picker_ios:
@@ -219,7 +214,6 @@ SPEC CHECKSUMS:
   FirebaseInstallations: ae9f4902cb5bf1d0c5eaa31ec1f4e5495a0714e2
   FirebaseMessaging: d33971b7bb252745ea6cd31ab190d1a1df4b8ed5
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_local_notifications: ff50f8405aaa0ccdc7dcfb9022ca192e8ad9688f
   google_sign_in_ios: 4bb0e529b167cadc6ac785b6ed943c0a0a4cc1c9
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleSignIn: c7f09cfbc85a1abf69187be091997c317cc33b77

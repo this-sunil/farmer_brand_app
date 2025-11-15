@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:farmer_brand/Model/AuthModel.dart';
@@ -82,6 +83,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   _fetchProfileApi(FetchProfileEvent event,Emitter<AuthState> emit) async{
     emit(state.copyWith(status: AuthStatus.refresh));
     String? uid=await LocalStorage().getUID();
+    log("\n User ID=>$uid");
     final result=await repository.fetchProfileRepo(
         url: "${dotenv.env["BASE_URL"]}${dotenv.env["FETCH_PROFILE"]}", header: {
       "Content-Type":"application/json"

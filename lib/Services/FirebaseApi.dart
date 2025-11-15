@@ -2,8 +2,6 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-//import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:either_dart/either.dart';
 
@@ -46,16 +44,9 @@ class FirebaseApi{
     }
   }
 
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLocalNotificationsPlugin();
   sendNotification(String title,String body) async{
-    int id=DateTime.now().microsecondsSinceEpoch;
-    NotificationDetails notificationDetails=NotificationDetails(
-      android: AndroidNotificationDetails('Basic_Channel', 'Basic Channel',priority: Priority.high,category:AndroidNotificationCategory.message),
-      iOS: DarwinNotificationDetails(
-        subtitle: body
-      )
-    );
-    await flutterLocalNotificationsPlugin.show(id, title, body, notificationDetails);
+    //int id=DateTime.now().microsecondsSinceEpoch;
+
   }
 
   Future<Either<String, UserCredential>> signInGoogle() async {

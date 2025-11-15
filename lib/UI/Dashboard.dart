@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import '../Bloc/AuthBloc/AuthBloc.dart';
 import '../Bloc/BannerBloc/BannerBloc.dart';
-import '../Bloc/WeatherBloc/WeatherBloc.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,6 +18,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int currentIndex = 0;
+
   getWeatherCondition(clouds, weatherId) {
     if (weatherId >= 200 && weatherId < 300) {
       return "Thunderstorm";
@@ -42,7 +42,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     // TODO: implement initState
-
     context.read<AuthBloc>().add(FetchProfileEvent());
     context.read<BannerBloc>().add(FetchBannerEvent());
     super.initState();
@@ -51,7 +50,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     // TODO: implement dispose
-
     super.dispose();
   }
 
@@ -66,10 +64,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         centerTitle: false,
-        title: BlocBuilder<WeatherBloc, WeatherState>(
+        titleSpacing: 1.0,
+        title: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             switch (state.status) {
-              case WeatherStatus.completed:
+              case AuthStatus.fetch:
                 return Padding(
                   padding: EdgeInsets.all(10),
                   child: Column(
@@ -89,42 +88,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                         blendMode: BlendMode.srcIn,
                         child: Text(
-                          state.model?.name ?? 'Unknown Location',
+                          currentIndex==0?'Hi,${state.result?.result?.name}':currentIndex==1?'Our Farmer':currentIndex==2?'Cart':'Setting',
                           style: const TextStyle(
                             color: Colors.black,
-                            fontSize: 20,
+                            fontSize: 18,
 
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
 
-                      ShaderMask(
-                        shaderCallback: (bounds) =>
-                            LinearGradient(
-                              colors: [
-                                Colors.blue,
-                                Colors.purple,
-                                Colors.pink,
-                                Colors.purple,
-                              ],
-                            ).createShader(
-                              Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                            ),
-                        blendMode: BlendMode.srcIn,
-                        child: Text(
-                          getWeatherCondition(
-                            state.model?.clouds?.all,
-                            state.model?.weather?[0].id,
-                          ),
-                          style: const TextStyle(
-                            color: Colors.black,
 
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 10),
                     ],
                   ),
@@ -161,15 +135,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         activeIndex: currentIndex,
         activeIcons: [
           Icon(HeroiconsSolid.home, color: Colors.white),
-          Icon(HeroiconsSolid.videoCamera, color: Colors.white),
-          Icon(HeroiconsSolid.documentArrowDown, color: Colors.white),
-          Icon(HeroiconsSolid.listBullet, color: Colors.white),
+          Icon(HeroiconsOutline.square3Stack3d, color: Colors.white),
+          Icon(HeroiconsSolid.shoppingBag, color: Colors.white),
+          Icon(Icons.menu, color: Colors.white),
         ],
         inactiveIcons: [
           Icon(HeroiconsSolid.home, color: Colors.grey.shade300),
-          Icon(HeroiconsSolid.videoCamera, color: Colors.grey.shade300),
-          Icon(HeroiconsSolid.documentArrowDown, color: Colors.grey.shade300),
-          Icon(HeroiconsSolid.listBullet, color: Colors.grey.shade300),
+          Icon(HeroiconsSolid.square3Stack3d, color: Colors.grey.shade300),
+          Icon(HeroiconsSolid.shoppingBag, color: Colors.grey.shade300),
+          Icon(Icons.menu, color: Colors.grey.shade300),
         ],
         color: Colors.deepOrangeAccent,
       ),

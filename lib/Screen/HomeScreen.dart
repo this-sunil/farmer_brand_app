@@ -1,14 +1,16 @@
 import 'dart:collection';
 import 'dart:developer';
 
+import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import 'package:farmer_brand/Bloc/BannerBloc/BannerBloc.dart';
 import 'package:farmer_brand/Bloc/ProductBloc/ProductBloc.dart';
 import 'package:farmer_brand/Bloc/WeatherBloc/WeatherBloc.dart';
-import 'package:farmer_brand/Services/Routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:skeletonsplus/skeletonsplus.dart';
 
 import '../Bloc/AuthBloc/AuthBloc.dart';
+import '../Widget/RefreshButton.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,9 +23,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController animationController;
 
   late Animation animation;
-
-
-
 
   int currentIndex = 0;
   late PageController pageController;
@@ -55,10 +54,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     //context.read<PostBloc>().add(FetchPostEvent());
     context.read<BannerBloc>().add(FetchBannerEvent());
     context.read<ProductBloc>().add(FetchProduct(page: "1"));
-    context.read<WeatherBloc>().add(FetchWeatherEvent("17.691401", "74.000938"));
-
-
-
+    context.read<WeatherBloc>().add(
+      FetchWeatherEvent("17.691401", "74.000938"),
+    );
 
     super.initState();
     pageController = PageController();
@@ -68,13 +66,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: Duration(seconds: 1),
     );
     animationController.forward();
-
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     pageController.dispose();
+    animationController.removeListener(() {});
     animationController.dispose();
 
     super.dispose();
@@ -88,467 +86,502 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           children: [
             BlocConsumer<BannerBloc, BannerState>(
-              listenWhen: (prev,current)=>prev.status!=current.status,
+              listenWhen: (prev, current) => prev.status != current.status,
               listener: (context, state) {
-                switch (state.status) {
-                  case BannerStatus.completed:
-                    animationController.addStatusListener((status) async {
-                      if (status == AnimationStatus.completed) {
-                        int length = state.model?.result?.length ?? 0;
-                        log("Banner length=>$length");
-                        if (currentIndex < length - 1) {
-                          currentIndex++;
-                          pageController.animateToPage(
-                            currentIndex,
-                            duration: Duration(seconds: 1),
-                            curve: Curves.fastOutSlowIn,
-                          );
-                          animationController
-                            ..reset()
-                            ..forward();
-                        } else {
-                          Future.delayed(Duration(seconds: 1), () {
-                            setState(() {
-                              currentIndex = 0;
-                              pageController.animateToPage(
-                                currentIndex,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.fastOutSlowIn,
-                              );
-                              animationController
-                                ..reset()
-                                ..forward();
-                            });
-                          });
-                        }
-                      }
-                    });
-                    break;
-                  default:
-                    break;
+                if (state.status == BannerStatus.completed) {
+                  log("Banners loaded: ${state.model?.result?.length ?? 0}");
                 }
               },
-              buildWhen: (prev,current)=>prev.status!=current.status,
+              buildWhen: (prev, current) => prev.status != current.status,
               builder: (context, state) {
                 switch (state.status) {
-                  case BannerStatus.loading:
-                    return Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  case BannerStatus.completed:
-                    return SizedBox(
-                      height: 250,
-                      child: PageView.builder(
-                        controller: pageController,
-                        itemCount: state.model?.result?.length ?? 0,
-                        onPageChanged: (index) {
-                          setState(() {
-                            currentIndex = index;
-                          });
+                  case BannerStatus.error:
+                    return Center(
+                      child: RefreshButton(
+                        onTap: () {
+                          context.read<BannerBloc>().add(FetchBannerEvent());
                         },
-                        itemBuilder: (context, index) {
-                          final item = state.model?.result?[index];
-                          return Hero(
-                            tag: '${item?.title.toString()}',
-                            flightShuttleBuilder:
-                                (
-                                  BuildContext flightContext,
-                                  Animation<double> animation,
-                                  HeroFlightDirection flightDirection,
-                                  BuildContext fromHeroContext,
-                                  BuildContext toHeroContext,
-                                ) {
-                                  return ScaleTransition(
-                                    scale: CurvedAnimation(
-                                      parent: animation,
-                                      curve: Curves.easeInOut,
+                      ),
+                    );
+                  default:
+                    final isLoading = state.status == BannerStatus.loading;
+                    final banners = state.model?.result ?? [];
+                    return Skeleton(
+                      isLoading: isLoading,
+                      skeleton: _buildBannerCard(),
+                      child: Builder(
+                        builder: (context) {
+                          switch (state.status) {
+                            case BannerStatus.completed:
+                              if (banners.isEmpty) {
+                                return const Center(
+                                  child: Text(
+                                    "No banners available",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 16,
                                     ),
-                                    child:
-                                        flightDirection ==
-                                            HeroFlightDirection.push
-                                        ? toHeroContext.widget
-                                        : fromHeroContext.widget,
-                                  );
-                                },
-                            transitionOnUserGestures: true,
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                return Stack(
-                                  children: [
-                                    Container(
-                                      width: constraints.maxWidth,
-                                      height: constraints.maxHeight,
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                            '${item?.photo.toString()}',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.black45,
-                                          ],
-                                          stops: [0.6, 1.0],
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.black45,
-                                          ],
-                                          stops: [0.6, 1.0],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 );
-                              },
-                            ),
+                              }
+
+                              return Column(
+                                children: [
+                                  CarouselSlider.builder(
+                                    itemCount: banners.length,
+                                    itemBuilder: (context, index, realIdx) {
+                                      final item = banners[index];
+                                      return Hero(
+                                        tag: item.title ?? 'banner_$index',
+                                        child: Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            Image.network(
+                                              item.photo ?? '',
+                                              fit: BoxFit.cover,
+                                              loadingBuilder:
+                                                  (context, child, progress) {
+                                                    if (progress == null) {
+                                                      return child;
+                                                    }
+                                                    return const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    );
+                                                  },
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return const Center(
+                                                      child: Icon(
+                                                        Icons.error,
+                                                        color: Colors.red,
+                                                      ),
+                                                    );
+                                                  },
+                                            ),
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    Colors.transparent,
+                                                    Colors.black54,
+                                                  ],
+                                                  stops: [0.6, 1.0],
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 16,
+                                              left: 16,
+                                              right: 16,
+                                              child: Text(
+                                                item.title ?? '',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                  shadows: [
+                                                    Shadow(
+                                                      color: Colors.black54,
+                                                      blurRadius: 4,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    options: CarouselOptions(
+                                      height: 250,
+                                      autoPlay: true,
+                                      enlargeCenterPage: false,
+                                      viewportFraction: 1,
+                                      aspectRatio: 16 / 9,
+                                      autoPlayInterval: const Duration(
+                                        seconds: 4,
+                                      ),
+                                      autoPlayAnimationDuration: const Duration(
+                                        milliseconds: 800,
+                                      ),
+                                      onPageChanged: (index, reason) {
+                                        setState(() => currentIndex = index);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Indicator Dots
+                                  Padding(
+                                    padding: const EdgeInsets.all(2),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: banners.asMap().entries.map((
+                                        entry,
+                                      ) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            setState(
+                                              () => currentIndex = entry.key,
+                                            );
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            width: currentIndex == entry.key
+                                                ? 15
+                                                : 8,
+                                            height: 5,
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: currentIndex == entry.key
+                                                  ? Colors.black
+                                                  : Colors.grey.shade300,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              );
+
+                            case BannerStatus.error:
+                              return Center(
+                                child: Text(
+                                  state.msg ?? "Failed to load banners",
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              );
+
+                            default:
+                              return const SizedBox.shrink();
+                          }
+                        },
+                      ),
+                    );
+                }
+              },
+            ),
+
+            BlocBuilder<ProductBloc, ProductState>(
+              buildWhen: (prev, current) => prev.status != current.status,
+              builder: (context, state) {
+                switch (state.status) {
+                  case ProductStatus.error:
+                    return Center(
+                      child: RefreshButton(
+                        onTap: () {
+                          context.read<ProductBloc>().add(
+                            FetchProduct(page: "1"),
                           );
                         },
                       ),
                     );
                   default:
-                    return Container(color: Colors.red);
-                }
-              },
-            ),
-
-            // BlocBuilder<WeatherBloc, WeatherState>(
-            //   builder: (context, state) {
-            //     switch (state.status) {
-            //       case WeatherStatus.completed:
-            //         return Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           mainAxisSize: MainAxisSize.min,
-            //           children: [
-            //             Padding(
-            //               padding: EdgeInsets.all(8),
-            //               child: Row(
-            //                 children: [
-            //                   Text(
-            //                     "Today’s Weather Forecast",
-            //                     style: TextStyle(
-            //                       color: Colors.black,
-            //                       fontSize: 18,
-            //                       fontWeight: FontWeight.bold,
-            //                     ),
-            //                   ),
-            //                 ],
-            //               ),
-            //             ),
-            //             Padding(
-            //               padding: EdgeInsets.all(8),
-            //               child: SingleChildScrollView(
-            //                 scrollDirection: Axis.horizontal,
-            //                 child: Row(
-            //                   children: [
-            //                     _buildInfoCard(
-            //                       icon: Icons.air,
-            //                       label: "Wind",
-            //                       value:
-            //                           "${state.model?.wind?.speed ?? '-'} m/s",
-            //                       color: Colors.orange,
-            //                     ),
-            //                     _buildInfoCard(
-            //                       icon: Icons.thermostat,
-            //                       label: "Temperature",
-            //                       value: formatTemp(
-            //                         state.model?.main?.temp ?? 0.0,
-            //                       ),
-            //                       color: Colors.amber,
-            //                     ),
-            //                     _buildInfoCard(
-            //                       icon: Icons.opacity,
-            //                       label: "Humidity",
-            //                       value:
-            //                           "${state.model?.main?.humidity ?? '-'}%",
-            //                       color: Colors.greenAccent,
-            //                     ),
-            //                     _buildInfoCard(
-            //                       icon: Icons.speed,
-            //                       label: "Pressure",
-            //                       value:
-            //                           "${state.model?.main?.pressure ?? '-'} hPa",
-            //                       color: Colors.pink,
-            //                     ),
-            //                   ],
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         );
-            //       default:
-            //         return Container();
-            //     }
-            //   },
-            // ),
-
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  Text(
-                    "Our Farmers",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            BlocBuilder<ProductBloc, ProductState>(
-              builder: (context, state) {
-                switch (state.status) {
-                  case ProductStatus.loading:
-                    return Center(child: CircularProgressIndicator());
-                  case ProductStatus.completed:
-                    return ListView.builder(
-                      itemCount: state.product?.result?.length,
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final item=state.product?.result?[index];
-                        return Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(10),
+                    final isLoading = state.status == ProductStatus.loading;
+                    final productList = state.product?.result ?? [];
+                    return Skeleton(
+                      isLoading: isLoading,
+                      skeleton: ListView.builder(
+                        itemCount: 4,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return _buildProductCard();
+                        },
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Our Farmers Product",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {},
+                                  child: Text("See All"),
+                                ),
+                              ],
+                            ),
                           ),
-                          color: Colors.white,
-                          shadowColor: Colors.grey.shade300,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ListTile(
-                                contentPadding: EdgeInsets.only(
-                                  left: 5,
-                                  right: 5,
-                                  top: 5,
-                                ),
-                                leading: CircleAvatar(
-                                  maxRadius: 30,
-                                  backgroundImage: NetworkImage(
-                                    item?.photo.toString()??'',
-                                  ),
-                                ),
-                                title: Text(
-                                  "${item?.name}",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  "${item?.city},MH-${item?.pin}",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                trailing: Card(
-                                  elevation: 10,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  color: Colors.orangeAccent,
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 6,
-                                    ),
-                                    child: Text(
-                                      index % 2 == 0 ? "Active" : "Inactive",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xff333945),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
 
-                              Divider(color: Colors.grey.shade300),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 2,
-                                  horizontal: 10,
-                                ),
-                                child: Text(
-                                  "Our Products",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                          ListView.builder(
+                            itemCount: productList.length,
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final item = productList[index];
+                              final productItems = item.products ?? [];
+                              if (productItems.isEmpty) {
+                                return Container();
+                              }
+                              return SizedBox(
+                                height: 180,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.only(
+                                    bottom: 5,
+                                    left: 5,
+                                    right: 5,
                                   ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 220,
-                                child: Padding(
-                                  padding: EdgeInsets.all(4),
-                                  child: ListView.builder(
-                                    itemCount: state.product?.result?.length??0,
-                                    scrollDirection: Axis.horizontal,
-                                    itemBuilder: (context, currentIndex) {
-                                      final productItem=item?.products?[currentIndex];
-                                      return GestureDetector(
-                                        onTap: () {
-                                          context.push(AppRoutes.overView, {
-                                            "id": '${productItem?.pid}',
-                                            "name": '${productItem?.productTitle}',
-                                            "imgPath": "${productItem?.productPhoto}",
-                                            "price": "${productItem?.productPrice}",
-                                          });
-                                        },
-                                        child: SizedBox(
-                                          width: 160,
-                                          child: Card(
-                                            color: Colors.white,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                              children: [
-                                                Expanded(
-                                                  flex: 5,
-                                                  child: Hero(
-                                                    tag: '$index$currentIndex',
-                                                    child: Container(
-                                                      clipBehavior:
-                                                      Clip.hardEdge,
-                                                      width: double.infinity,
-                                                      height: 180,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                        BorderRadius.only(
-                                                          topLeft:
-                                                          Radius.circular(
-                                                            10,
-                                                          ),
-                                                          topRight:
-                                                          Radius.circular(
-                                                            10,
-                                                          ),
-                                                        ),
-                                                        image: DecorationImage(
-                                                          fit: BoxFit.cover,
-                                                          colorFilter:
-                                                          index % 2 == 0
-                                                              ? null
-                                                              : ColorFilter.mode(
-                                                            Colors.black,
-                                                            BlendMode
-                                                                .saturation,
-                                                          ),
-                                                          image: NetworkImage(
-                                                            '${productItem?.productPhoto}',
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-
-                                                Padding(
-                                                  padding:
-                                                  const EdgeInsets.only(
-                                                    left: 10,
-                                                    right: 5,
-                                                    top: 8,
-                                                  ),
-                                                  child: Text(
-                                                    "${item?.name}",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight.bold,
-                                                      fontSize: 14,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                  const EdgeInsets.only(
-                                                    left: 10,
-                                                    right: 5,
-                                                    bottom: 8,
-                                                  ),
-                                                  child: Text(
-                                                    "\u{20b9} ${productItem?.productPrice}",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                      FontWeight.w500,
-                                                      fontSize: 14,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ),
-
-                                                Flexible(
-                                                  flex: 3,
-                                                  child: Align(
-                                                    alignment: AlignmentGeometry
-                                                        .center,
-                                                    child: ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                        Colors.pinkAccent,
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      onPressed: () {},
-                                                      child: Text(
-                                                        "Add Cart",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(height: 5),
-                                              ],
-                                            ),
+                                  itemCount: productItems.length,
+                                  itemBuilder: (context, currentIndex) {
+                                    final productItem =
+                                        productItems[currentIndex];
+                                    return SizedBox(
+                                      width: 150,
+                                      child: Card(
+                                        color: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
                                           ),
                                         ),
-                                      );
-                                    },
-                                  ),
+                                        elevation: 10,
+                                        shadowColor: Colors.black,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Flexible(
+                                              flex: 3,
+                                              child: Hero(
+                                                tag: '$index$currentIndex',
+                                                child: Container(
+                                                  clipBehavior: Clip.hardEdge,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                10,
+                                                              ),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                10,
+                                                              ),
+                                                        ),
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: NetworkImage(
+                                                        productItem
+                                                                .productPhoto ??
+                                                            '',
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  child: Align(
+                                                    alignment: AlignmentGeometry
+                                                        .bottomRight,
+                                                    child:
+                                                        productItem
+                                                                .productQty !=
+                                                            0
+                                                        ? SizedBox(
+                                                            height: 50,
+                                                            child: Card(
+                                                              color:
+                                                                  Colors.pink,
+                                                              child: Row(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
+                                                                children: [
+                                                                  IconButton(
+                                                                    onPressed: () {
+                                                                      int qty =
+                                                                          int.parse(
+                                                                            productItem.productQty.toString(),
+                                                                          ) -
+                                                                          1;
+                                                                      log(
+                                                                        "Remove qty=>$qty",
+                                                                      );
+                                                                      context
+                                                                          .read<
+                                                                            ProductBloc
+                                                                          >()
+                                                                          .add(
+                                                                            AddQuantity(
+                                                                              pid: productItem.pid.toString(),
+                                                                              qty: qty,
+                                                                            ),
+                                                                          );
+                                                                    },
+                                                                    icon: Icon(
+                                                                      Icons
+                                                                          .remove_circle,
+                                                                      color: Colors
+                                                                          .white,
+                                                                    ),
+                                                                  ),
+
+                                                                  Text(
+                                                                    "${productItem.productQty}",
+                                                                    style: TextStyle(
+                                                                      color: Colors
+                                                                          .white,
+                                                                    ),
+                                                                  ),
+                                                                  IconButton(
+                                                                    onPressed: () {
+                                                                      int qty =
+                                                                          int.parse(
+                                                                            productItem.productQty.toString(),
+                                                                          ) +
+                                                                          1;
+                                                                      log(
+                                                                        "message=>$qty",
+                                                                      );
+                                                                      context
+                                                                          .read<
+                                                                            ProductBloc
+                                                                          >()
+                                                                          .add(
+                                                                            AddQuantity(
+                                                                              pid: productItem.pid.toString(),
+                                                                              qty: qty,
+                                                                            ),
+                                                                          );
+                                                                    },
+                                                                    icon: Icon(
+                                                                      Icons
+                                                                          .add_circle,
+                                                                      color: Colors
+                                                                          .white,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : IconButton(
+                                                            padding:
+                                                                EdgeInsets.zero,
+                                                            onPressed: () {
+                                                              context.read<ProductBloc>().add(
+                                                                AddQuantity(
+                                                                  pid: productItem
+                                                                      .pid
+                                                                      .toString(),
+                                                                  qty:
+                                                                      double.parse(
+                                                                        productItem
+                                                                            .productQty
+                                                                            .toString(),
+                                                                      ).toInt() +
+                                                                      1,
+                                                                ),
+                                                              );
+                                                            },
+                                                            icon: Card(
+                                                              elevation: 8,
+                                                              shadowColor:
+                                                                  Colors
+                                                                      .grey
+                                                                      .shade300,
+                                                              color: Colors
+                                                                  .pinkAccent,
+                                                              shape: RoundedRectangleBorder(
+                                                                side: BorderSide(
+                                                                  color: Colors
+                                                                      .white
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            .5,
+                                                                      ),
+                                                                  width: 1.5,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      5,
+                                                                    ),
+                                                              ),
+                                                              child: Padding(
+                                                                padding:
+                                                                    EdgeInsets.all(
+                                                                      2,
+                                                                    ),
+                                                                child: Icon(
+                                                                  Icons.add,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+
+                                            Flexible(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2,
+                                                    ),
+                                                child: Text(
+                                                  productItem.productTitle ??
+                                                      "Unknown",
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                              child: Text(
+                                                "\u{20b9} ${productItem.productPrice} / ${productItem.productWeight ?? '--'}",
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ),
-
-
-                            ],
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     );
-                  case ProductStatus.error:
-                    return Text("${state.msg}",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16));
-                  default:
-                    return Container();
                 }
               },
             ),
@@ -558,3 +591,191 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 }
+
+Widget _buildProductCard() {
+  return SizedBox(
+    height: 180,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.only(bottom: 5, left: 5, right: 5),
+      itemCount: 10,
+      itemBuilder: (context, currentIndex) {
+        return SizedBox(
+          width: 150,
+          child: Card(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 10,
+            shadowColor: Colors.black,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: Hero(
+                    tag: '$currentIndex',
+                    child: Container(
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+Widget _buildBannerCard() {
+  return SizedBox(
+    height: 250,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(10),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+/*
+
+Widget _buildInfoCard({
+  required IconData icon,
+  required String label,
+  required String value,
+  required Color color,
+}) {
+  return Card(
+    margin: const EdgeInsets.symmetric(horizontal: 8),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    elevation: 3,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 28, color: color),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 13, color: Colors.black54),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+BlocBuilder<WeatherBloc, WeatherState>(
+              builder: (context, state) {
+                switch (state.status) {
+                  case WeatherStatus.completed:
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Row(
+                            children: [
+                              Text(
+                                "Today’s Weather Forecast",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(8),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                _buildInfoCard(
+                                  icon: Icons.air,
+                                  label: "Wind",
+                                  value:
+                                      "${state.model?.wind?.speed ?? '-'} m/s",
+                                  color: Colors.orange,
+                                ),
+                                _buildInfoCard(
+                                  icon: Icons.thermostat,
+                                  label: "Temperature",
+                                  value: formatTemp(
+                                    state.model?.main?.temp ?? 0.0,
+                                  ),
+                                  color: Colors.amber,
+                                ),
+                                _buildInfoCard(
+                                  icon: Icons.opacity,
+                                  label: "Humidity",
+                                  value:
+                                      "${state.model?.main?.humidity ?? '-'}%",
+                                  color: Colors.greenAccent,
+                                ),
+                                _buildInfoCard(
+                                  icon: Icons.speed,
+                                  label: "Pressure",
+                                  value:
+                                      "${state.model?.main?.pressure ?? '-'} hPa",
+                                  color: Colors.pink,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  default:
+                    return Container();
+                }
+              },
+            ),
+*/

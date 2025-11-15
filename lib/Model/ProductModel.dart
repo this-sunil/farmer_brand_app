@@ -96,7 +96,7 @@ class Product {
 
   Product({
     this.pid,
-    this.productQty,
+    this.productQty=0,
     this.productDesc,
     this.productPhoto,
     this.productPrice,

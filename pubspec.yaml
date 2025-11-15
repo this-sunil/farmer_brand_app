@@ -53,9 +53,10 @@ dependencies:
   skeletonsplus: ^0.0.1
   firebase_auth: ^6.1.1
   firebase_messaging: ^16.0.3
-  flutter_local_notifications: ^19.5.0
   firebase_core: ^4.2.0
   http: ^1.6.0
+  carousel_slider_plus: ^7.1.1
+  google_fonts: ^6.3.2
 
 
 

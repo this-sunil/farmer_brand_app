@@ -6,6 +6,7 @@ import 'package:farmer_brand/UI/Auth/VerifyScreen.dart';
 import 'package:farmer_brand/UI/Dashboard.dart';
 import 'package:farmer_brand/UI/SplashScreen.dart';
 import 'package:flutter/material.dart';
+import '../Screen/ProductByIdScreen.dart';
 import '../UI/Profile/UpdateProfile.dart';
 
 mixin AppRoutes {
@@ -20,6 +21,7 @@ mixin AppRoutes {
   static const String streamVideo="/stream-video";
   static const String updateProfile="/update-profile";
   static const String overView="/overview";
+  static const String productById='/productById';
 
   static Widget transitionsBuilder(
     BuildContext context,
@@ -60,6 +62,16 @@ mixin AppRoutes {
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               ChatScreen(),
+          transitionsBuilder: transitionsBuilder,
+        );
+      case productById:
+        final  args=settings.arguments as Map<String,dynamic>;
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ProductByIdScreen(
+                id: args['id'],
+                name: args['name']
+              ),
           transitionsBuilder: transitionsBuilder,
         );
       case overView:

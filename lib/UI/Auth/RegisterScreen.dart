@@ -184,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> with HelperMixin {
                 BlocConsumer<AuthBloc, AuthState>(
                   listener: (context, state) async{
                     switch (state.status) {
-                      case AuthStatus.login:
+                      case AuthStatus.register:
                         log("Success");
                         await localStorage.setUID(
                           "${state.result?.result?.id.toString()}",
