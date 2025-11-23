@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:farmer_brand/Services/NotificationService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -22,9 +23,11 @@ class FirebaseApi{
   }
 
   init() async{
+
     messaging.requestPermission();
     messaging.setAutoInitEnabled(true);
     messaging.getInitialMessage();
+    NotificationService.instance.init();
     FirebaseMessaging.onBackgroundMessage(remoteMessage);
     FirebaseMessaging.onMessage.listen((message){
       if(message.notification==null) return;
@@ -40,13 +43,14 @@ class FirebaseApi{
     else{
       String? deviceToken=await messaging.getToken();
       log("========Device Token => $deviceToken============");
-      messaging.subscribeToTopic('all');
+      messaging.subscribeToTopic('/topics/all');
     }
   }
 
   sendNotification(String title,String body) async{
     //int id=DateTime.now().microsecondsSinceEpoch;
-
+    log("Notification Send!!!");
+    await NotificationService.instance.createNotification(title, body);
   }
 
   Future<Either<String, UserCredential>> signInGoogle() async {

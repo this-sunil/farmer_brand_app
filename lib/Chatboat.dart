@@ -3,9 +3,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:farmer_brand/OpenAI.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_tts/flutter_tts_web.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:farmer_brand/ChatBloc/ChatBloc.dart';
 
 
@@ -20,7 +20,25 @@ class _ChatScreenState extends State<ChatScreen> {
   final OpenAIService openAIService = OpenAIService();
   final TextEditingController controller = TextEditingController();
   // List<Map<String, String>> messages = [];
-  SpeechToText speechToText=SpeechToText();
+
+  FlutterTts flutterTts = FlutterTts();
+
+  TtsState ttsState = TtsState.stopped;
+
+  Future _speak() async{
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setSpeechRate(1.0);
+    await flutterTts.setPitch(1.0);
+    var result = await flutterTts.speak(controller.text);
+    if (result == 1) setState(() => ttsState = TtsState.playing);
+    initialize(result);
+  }
+
+  Future _stop() async{
+    var result = await flutterTts.stop();
+    if (result == 1) setState(() => ttsState = TtsState.stopped);
+  }
+
   void sendMessage() async {
     final text = controller.text;
     if (text.isNotEmpty) {
@@ -42,41 +60,21 @@ class _ChatScreenState extends State<ChatScreen> {
     //   setState(() => messages.add({'sender': 'user', 'text': r.result.toString().trim()}));
     // });
     String text="only this sentence translate only no note or no extra explain Hi, I am Chat boat.How can help you?";
+
     context.read<ChatBloc>().add(BotEvent(status: BoatStatus.boat,msg: text));
+
   }
   /// This has to happen only once per app
   bool speechEnabled=false;
   void initSpeech() async {
-    await speechToText.systemLocale();
-   await speechToText.initialize().whenComplete(()=>log("Initialize Speech"));
 
-
-
-    Future.delayed(Duration(seconds: 1),(){
-      setState(() {});
-    });
-  }
-
-  /// Each time to start a speech recognition session
-  void startListening() async {
-    await speechToText.listen(onResult: _onSpeechResult);
-    log("Start Listen");
   }
 
 
-  void stopListening() async {
-    await speechToText.stop();
-    log("Stop Listen");
-  }
 
-  /// This is the callback that the SpeechToText plugin calls when
-  /// the platform returns recognized words.
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    setState(() {
-      controller.text = result.recognizedWords.toString();
 
-    });
-  }
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -102,7 +100,6 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: BlocBuilder<ChatBloc,ChatState>(builder: (context,state){
-
               return ListView.builder(
                 itemCount: state.chats.length,
                 itemBuilder: (context, index) {
@@ -141,8 +138,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   );
                 },
               );
-
-
             }),
           ),
           Padding(
@@ -156,19 +151,14 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               child: TextFormField(controller: controller,decoration: InputDecoration(
                   border: InputBorder.none,
-                  // prefixIcon: IconButton(onPressed: (){
-                  //   if(speechEnabled){
-                  //     _stopListening();
-                  //   }
-                  //   else{
-                  //     _startListening();
-                  //   }
-                  //
-                  //     setState(() {
-                  //       speechEnabled=!speechEnabled;
-                  //     });
-                  //
-                  // }, icon: Icon(speechEnabled==false?Icons.mic_off_sharp:Icons.mic)),
+                  prefixIcon: IconButton(onPressed: (){
+                    if(ttsState==TtsState.playing){
+                      _speak();
+                    }
+                    else{
+
+                    }
+                   }, icon: Icon(speechEnabled==false?Icons.mic_off_sharp:Icons.mic)),
                   hintText: "Send a message",
                   suffixIcon:  IconButton(icon: Icon(Icons.send), onPressed: sendMessage),
                   contentPadding: EdgeInsets.symmetric(horizontal: 15,vertical: 10),

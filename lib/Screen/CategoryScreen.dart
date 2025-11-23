@@ -1,7 +1,6 @@
 import 'package:farmer_brand/Services/Routes.dart';
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
-
 import '../Bloc/ProductBloc/ProductBloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonsplus/skeletonsplus.dart';
@@ -30,9 +29,7 @@ class CategoryScreen extends StatelessWidget {
             default:
               final isLoading = state.status == ProductStatus.loading;
               final productList = state.product?.result ?? [];
-              if(productList.isEmpty){
-                return Center(child: Text("No Farmer Found !!!"),);
-              }
+
               return Skeleton(
                 isLoading: isLoading,
                 skeleton: ListView.builder(
@@ -74,7 +71,6 @@ class CategoryScreen extends StatelessWidget {
                                         productList[index].photo ?? '',
                                       ),
                                     ),
-
                                   ),
                                   child: Align(
                                     alignment: AlignmentGeometry.topRight,

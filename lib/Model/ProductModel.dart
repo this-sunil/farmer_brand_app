@@ -4,7 +4,8 @@
 
 import 'dart:convert';
 
-ProductModel productModelFromJson(String str) => ProductModel.fromJson(json.decode(str));
+ProductModel productModelFromJson(String str) =>
+    ProductModel.fromJson(json.decode(str));
 
 String productModelToJson(ProductModel data) => json.encode(data.toJson());
 
@@ -34,7 +35,9 @@ class ProductModel {
     totalPages: json["totalPages"],
     prevPage: json["prevPage"],
     nextPage: json["nextPage"],
-    result: json["result"] == null ? [] : List<Result>.from(json["result"]!.map((x) => Result.fromJson(x))),
+    result: json["result"] == null
+        ? []
+        : List<Result>.from(json["result"]!.map((x) => Result.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -44,7 +47,9 @@ class ProductModel {
     "totalPages": totalPages,
     "prevPage": prevPage,
     "nextPage": nextPage,
-    "result": result == null ? [] : List<dynamic>.from(result!.map((x) => x.toJson())),
+    "result": result == null
+        ? []
+        : List<dynamic>.from(result!.map((x) => x.toJson())),
   };
 }
 
@@ -56,14 +61,7 @@ class Result {
   final String? photo;
   final List<Product>? products;
 
-  Result({
-    this.fid,
-    this.name,
-    this.city,
-    this.pin,
-    this.photo,
-    this.products,
-  });
+  Result({this.fid, this.name, this.city, this.pin, this.photo, this.products});
 
   factory Result.fromJson(Map<String, dynamic> json) => Result(
     fid: json["fid"],
@@ -71,7 +69,9 @@ class Result {
     city: json["city"],
     pin: json["pin"],
     photo: json["photo"],
-    products: json["products"] == null ? [] : List<Product>.from(json["products"]!.map((x) => Product.fromJson(x))),
+    products: json["products"] == null
+        ? []
+        : List<Product>.from(json["products"]!.map((x) => Product.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -80,7 +80,9 @@ class Result {
     "city": city,
     "pin": pin,
     "photo": photo,
-    "products": products == null ? [] : List<dynamic>.from(products!.map((x) => x.toJson())),
+    "products": products == null
+        ? []
+        : List<dynamic>.from(products!.map((x) => x.toJson())),
   };
 }
 
@@ -96,7 +98,7 @@ class Product {
 
   Product({
     this.pid,
-    this.productQty=0,
+    this.productQty = 0,
     this.productDesc,
     this.productPhoto,
     this.productPrice,
@@ -116,6 +118,28 @@ class Product {
     productWeight: json["product_weight"],
   );
 
+  Product copyWith({
+    int? pid,
+    int? productQty,
+    String? productDesc,
+    String? productPhoto,
+    int? productPrice,
+    int? productStock,
+    String? productTitle,
+    String? productWeight,
+  }) {
+    return Product(
+      pid: pid ?? this.pid,
+      productQty: productQty ?? this.productQty,
+      productDesc: productDesc ?? this.productDesc,
+      productPhoto: productPhoto ?? this.productPhoto,
+      productPrice: productPrice ?? this.productPrice,
+      productStock: productStock ?? this.productStock,
+      productTitle: productTitle ?? this.productTitle,
+      productWeight: productWeight ?? this.productWeight,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
     "pid": pid,
     "product_qty": productQty,
@@ -126,5 +150,4 @@ class Product {
     "product_title": productTitle,
     "product_weight": productWeight,
   };
-
 }

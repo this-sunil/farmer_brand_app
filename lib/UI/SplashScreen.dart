@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'package:farmer_brand/Services/LocalStorage.dart';
-import 'package:farmer_brand/UI/Dashboard.dart';
 import 'package:farmer_brand/Model/FarmerModel.dart';
 import 'package:farmer_brand/Services/Routes.dart';
 import 'package:flutter/material.dart';
@@ -65,15 +64,15 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         } else {
           log("Reached the last page");
           //fetchUsers();
-          //String? uid=await localStorage.getUID();
-          //print("User=>$uid");
-          // if(uid==null){
-          //   context.pushReplace(AppRoutes.login);
-          // }
-          // else{
-          //   context.pushReplace(AppRoutes.dashboard);
-          // }
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>DashboardScreen()));
+          String? uid=await localStorage.getUID();
+          print("User=>$uid");
+          if(uid==null){
+            context.pushReplace(AppRoutes.login);
+          }
+          else{
+            context.pushReplace(AppRoutes.dashboard);
+          }
+
         }
       }
     });

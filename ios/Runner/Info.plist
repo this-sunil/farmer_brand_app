@@ -102,9 +102,13 @@
         <key>LSApplicationQueriesSchemes</key>
         <array>
             <string>upi</string>
-            <string>tez</string> <!-- Google Pay -->
+            <string>tez</string>
             <string>paytm</string>
             <string>phonepe</string>
+            <string>credpay</string>
+            <string>bhim</string>
         </array>
+
+
     </dict>
 </plist>

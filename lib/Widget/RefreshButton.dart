@@ -6,6 +6,20 @@ class RefreshButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(onPressed: onTap, child: Text('Refresh'));
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsetsGeometry.only(bottom:8),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage('assets/icons/village-farmer.png'))
+      ),
+      height: 300,
+      child: Center(
+       child:
+          ElevatedButton(onPressed: onTap, child: Text('Refresh'))
+
+      ),
+    );
   }
 }

@@ -90,6 +90,7 @@ void main() async{
   FlutterError.onError=(details){
     log("message=>$details");
   };
+
   runApp(const MyApp());
 }
 

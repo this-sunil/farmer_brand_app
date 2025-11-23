@@ -85,194 +85,158 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            BlocConsumer<BannerBloc, BannerState>(
-              listenWhen: (prev, current) => prev.status != current.status,
-              listener: (context, state) {
-                if (state.status == BannerStatus.completed) {
-                  log("Banners loaded: ${state.model?.result?.length ?? 0}");
-                }
-              },
+            BlocBuilder<BannerBloc, BannerState>(
               buildWhen: (prev, current) => prev.status != current.status,
               builder: (context, state) {
                 switch (state.status) {
-                  case BannerStatus.error:
-                    return Center(
-                      child: RefreshButton(
-                        onTap: () {
-                          context.read<BannerBloc>().add(FetchBannerEvent());
-                        },
-                      ),
-                    );
                   default:
                     final isLoading = state.status == BannerStatus.loading;
                     final banners = state.model?.result ?? [];
                     return Skeleton(
                       isLoading: isLoading,
                       skeleton: _buildBannerCard(),
-                      child: Builder(
-                        builder: (context) {
-                          switch (state.status) {
-                            case BannerStatus.completed:
-                              if (banners.isEmpty) {
-                                return const Center(
-                                  child: Text(
-                                    "No banners available",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              return Column(
-                                children: [
-                                  CarouselSlider.builder(
-                                    itemCount: banners.length,
-                                    itemBuilder: (context, index, realIdx) {
-                                      final item = banners[index];
-                                      return Hero(
-                                        tag: item.title ?? 'banner_$index',
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            Image.network(
-                                              item.photo ?? '',
-                                              fit: BoxFit.cover,
-                                              loadingBuilder:
-                                                  (context, child, progress) {
-                                                    if (progress == null) {
-                                                      return child;
-                                                    }
-                                                    return const Center(
-                                                      child:
-                                                          CircularProgressIndicator(),
-                                                    );
-                                                  },
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return const Center(
-                                                      child: Icon(
-                                                        Icons.error,
-                                                        color: Colors.red,
-                                                      ),
-                                                    );
-                                                  },
-                                            ),
-                                            Container(
-                                              decoration: const BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topCenter,
-                                                  end: Alignment.bottomCenter,
-                                                  colors: [
-                                                    Colors.transparent,
-                                                    Colors.black54,
-                                                  ],
-                                                  stops: [0.6, 1.0],
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: 16,
-                                              left: 16,
-                                              right: 16,
-                                              child: Text(
-                                                item.title ?? '',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                  shadows: [
-                                                    Shadow(
-                                                      color: Colors.black54,
-                                                      blurRadius: 4,
+                      child: banners.isEmpty
+                          ? Container()
+                          : Column(
+                              children: [
+                                CarouselSlider.builder(
+                                  itemCount: banners.length,
+                                  itemBuilder: (context, index, realIdx) {
+                                    final item = banners[index];
+                                    return Hero(
+                                      tag: item.title ?? 'banner_$index',
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          Image.network(
+                                            item.photo ?? '',
+                                            fit: BoxFit.cover,
+                                            loadingBuilder:
+                                                (context, child, progress) {
+                                                  if (progress == null) {
+                                                    return child;
+                                                  }
+                                                  return const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  );
+                                                },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      Icons.error,
+                                                      color: Colors.red,
                                                     ),
-                                                  ],
-                                                ),
+                                                  );
+                                                },
+                                          ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  Colors.transparent,
+                                                  Colors.black54,
+                                                ],
+                                                stops: [0.6, 1.0],
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    options: CarouselOptions(
-                                      height: 250,
-                                      autoPlay: true,
-                                      enlargeCenterPage: false,
-                                      viewportFraction: 1,
-                                      aspectRatio: 16 / 9,
-                                      autoPlayInterval: const Duration(
-                                        seconds: 4,
-                                      ),
-                                      autoPlayAnimationDuration: const Duration(
-                                        milliseconds: 800,
-                                      ),
-                                      onPageChanged: (index, reason) {
-                                        setState(() => currentIndex = index);
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Indicator Dots
-                                  Padding(
-                                    padding: const EdgeInsets.all(2),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: banners.asMap().entries.map((
-                                        entry,
-                                      ) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            setState(
-                                              () => currentIndex = entry.key,
-                                            );
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            width: currentIndex == entry.key
-                                                ? 15
-                                                : 8,
-                                            height: 5,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              color: currentIndex == entry.key
-                                                  ? Colors.black
-                                                  : Colors.grey.shade300,
                                             ),
                                           ),
-                                        );
-                                      }).toList(),
+                                          Positioned(
+                                            bottom: 16,
+                                            left: 16,
+                                            right: 16,
+                                            child: Text(
+                                              item.title ?? '',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Colors.black54,
+                                                    blurRadius: 4,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  options: CarouselOptions(
+                                    height: 250,
+                                    autoPlay: true,
+                                    enlargeCenterPage: false,
+                                    viewportFraction: 1,
+                                    aspectRatio: 16 / 9,
+                                    autoPlayInterval: const Duration(
+                                      seconds: 4,
                                     ),
+                                    autoPlayAnimationDuration: const Duration(
+                                      milliseconds: 800,
+                                    ),
+                                    onPageChanged: (index, reason) {
+                                      setState(() => currentIndex = index);
+                                    },
                                   ),
-                                ],
-                              );
-
-                            case BannerStatus.error:
-                              return Center(
-                                child: Text(
-                                  state.msg ?? "Failed to load banners",
-                                  style: const TextStyle(color: Colors.red),
                                 ),
-                              );
-
-                            default:
-                              return const SizedBox.shrink();
-                          }
-                        },
-                      ),
+                                const SizedBox(height: 8),
+                                // Indicator Dots
+                                Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: banners.asMap().entries.map((
+                                      entry,
+                                    ) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(
+                                            () => currentIndex = entry.key,
+                                          );
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          width: currentIndex == entry.key
+                                              ? 15
+                                              : 8,
+                                          height: 5,
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            color: currentIndex == entry.key
+                                                ? Colors.black
+                                                : Colors.grey.shade300,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
                     );
                 }
               },
             ),
 
-            BlocBuilder<ProductBloc, ProductState>(
+            BlocConsumer<ProductBloc, ProductState>(
+              listenWhen: (prev, current) => prev.status != current.status,
+              listener: (context, state) {
+                if (state.status == ProductStatus.completed) {
+                  context.read<ProductBloc>().add(FetchProduct(page: '1'));
+                }
+              },
               buildWhen: (prev, current) => prev.status != current.status,
               builder: (context, state) {
                 switch (state.status) {
@@ -329,9 +293,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             padding: EdgeInsets.zero,
                             physics: const NeverScrollableScrollPhysics(),
                             itemBuilder: (context, index) {
-                              final item = productList[index];
-                              final productItems = item.products ?? [];
-                              if (productItems.isEmpty) {
+                              final item = productList[index].products;
+                              if (item!.isEmpty) {
                                 return Container();
                               }
                               return SizedBox(
@@ -343,10 +306,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     left: 5,
                                     right: 5,
                                   ),
-                                  itemCount: productItems.length,
+                                  itemCount: item.length,
                                   itemBuilder: (context, currentIndex) {
-                                    final productItem =
-                                        productItems[currentIndex];
+                                    final productItem = item[currentIndex];
                                     return SizedBox(
                                       width: 150,
                                       child: Card(

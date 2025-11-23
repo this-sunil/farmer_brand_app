@@ -116,7 +116,7 @@ class ProductRepo implements BaseProductRepo{
       switch(resp.statusCode){
         case 200:
           if(result['status']==true){
-            return Right(Success(status: ProductStatus.addQty,msg: result['msg']));
+            return Right(Success(status: ProductStatus.completed,msg: result['msg']));
           }
           else{
             return Left(Failure(status: ProductStatus.error,msg: result.msg));

@@ -23,6 +23,7 @@ mixin AppRoutes {
   static const String overView="/overview";
   static const String productById='/productById';
 
+
   static Widget transitionsBuilder(
     BuildContext context,
     Animation<double> animation,
@@ -100,6 +101,7 @@ mixin AppRoutes {
           pageBuilder: (context, animation, secondaryAnimation) => UpdateProfile(),
           transitionsBuilder: transitionsBuilder,
         );
+
       default:
         return PageRouteBuilder(
           transitionsBuilder: transitionsBuilder,

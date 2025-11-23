@@ -2,12 +2,16 @@ import 'dart:collection';
 import 'dart:developer';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:farmer_brand/Bloc/CartBloc/CartBloc.dart';
+import 'package:farmer_brand/Widget/NoProductScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:farmer_brand/Model/CategoryModel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:payu_checkoutpro_flutter/PayUConstantKeys.dart';
+import 'package:payu_checkoutpro_flutter/payu_checkoutpro_flutter.dart';
 import 'package:skeletonsplus/skeletonsplus.dart';
-
 import '../Bloc/ProductBloc/ProductBloc.dart';
+import '../Services/HashService.dart';
+import '../Widget/RefreshButton.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -16,12 +20,15 @@ class CartScreen extends StatefulWidget {
   State<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen> {
+class _CartScreenState extends State<CartScreen>
+    implements PayUCheckoutProProtocol {
   HashSet<String> selectItem = HashSet<String>();
   late List<CategoryModel> category;
+  late PayUCheckoutProFlutter checkoutProFlutter;
   @override
   void initState() {
     // TODO: implement initState
+    checkoutProFlutter = PayUCheckoutProFlutter(this);
     category = [
       CategoryModel(
         id: "1",
@@ -44,6 +51,7 @@ class _CartScreenState extends State<CartScreen> {
         imgPath: "assets/category/fruits.jpg",
       ),
     ];
+
     context.read<CartBloc>().add(FetchCartEvent());
     super.initState();
   }
@@ -51,7 +59,58 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void dispose() {
     // TODO: implement dispose
+
     super.dispose();
+  }
+
+  startTransaction(double amount) async {
+    await checkoutProFlutter.openCheckoutScreen(
+      payUPaymentParams: {
+        PayUPaymentParamKey.key: "rPBQSz",
+        PayUPaymentParamKey.transactionId:
+            "txn${DateTime.now().millisecondsSinceEpoch}",
+        PayUPaymentParamKey.amount: "$amount",
+        PayUPaymentParamKey.productInfo: "Farmer Brand",
+        PayUPaymentParamKey.firstName: "Sunil",
+        PayUPaymentParamKey.email: "swarajya888@gmail.com",
+        PayUPaymentParamKey.phone: "8668796251",
+        PayUPaymentParamKey.environment: "1",
+        PayUPaymentParamKey.android_furl:
+            "https:///www.payumoney.com/mobileapp/payumoney/failure.php",
+        PayUPaymentParamKey.ios_surl:
+            "https:///www.payumoney.com/mobileapp/payumoney/success.php",
+        PayUPaymentParamKey.ios_furl:
+            "https:///www.payumoney.com/mobileapp/payumoney/failure.php",
+      },
+      payUCheckoutProConfig: {PayUCheckoutProConfigKeys.merchantName: "PayU"},
+    );
+  }
+
+  @override
+  generateHash(Map response) async {
+    // Method 1 :
+    Map hashResponse = HashService.generateHash(response);
+    checkoutProFlutter.hashGenerated(hash: hashResponse);
+  }
+
+  @override
+  onPaymentSuccess(dynamic response) {
+    log(response.toString());
+  }
+
+  @override
+  onPaymentFailure(dynamic response) {
+    log(response.toString());
+  }
+
+  @override
+  onPaymentCancel(dynamic response) {
+    log(response.toString());
+  }
+
+  @override
+  onError(dynamic response) {
+    log(response.toString());
   }
 
   @override
@@ -59,25 +118,33 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       body: BlocListener<ProductBloc, ProductState>(
         listener: (context, state) {
-          switch (state.status) {
-            case ProductStatus.completed:
-              context.read<CartBloc>().add(FetchCartEvent());
-            default:
-              break;
+          if (state.status == ProductStatus.completed) {
+            context.read<CartBloc>().add(FetchCartEvent());
           }
         },
         child: BlocBuilder<CartBloc, CartState>(
+          buildWhen: (prev, current) => prev.status != current.status,
           builder: (context, state) {
             final isLoading = state.status == CartStatus.loading;
             final productItem = state.cartModel?.result ?? [];
-            final totalPrice = productItem.fold(
-              0,
-              (sum, e) =>
-                  sum +
-                  int.parse(e.productPrice.toString()) *
-                      int.parse(e.productQty.toString()),
-            );
 
+            final totalPrice = productItem.fold<int>(
+              0,
+              (sum, current) => sum + (current.productQty ?? 0),
+            );
+            if (state.status == CartStatus.error) {
+              return Center(
+                child: RefreshButton(
+                  onTap: () {
+                    context.read<CartBloc>().add(
+                      FetchCartEvent(),
+                    );
+                  },
+                ),
+              );;
+            } else if (productItem.isEmpty) {
+              return NoProductScreen();
+            }
             return Skeleton(
               isLoading: isLoading,
               skeleton: ListView.builder(
@@ -132,11 +199,9 @@ class _CartScreenState extends State<CartScreen> {
                       itemCount: productItem.length,
                       itemBuilder: (context, index) {
                         final item = productItem[index];
-                        if (productItem.isEmpty) {
-                          return Center(child: Text("No Data Found !!!"));
-                        }
+
                         return Dismissible(
-                          key: Key(productItem[index].pid.toString()),
+                          key: Key(item.pid.toString()),
                           onDismissed: (direction) {},
                           direction: DismissDirection.endToStart,
                           background: Container(
@@ -185,7 +250,7 @@ class _CartScreenState extends State<CartScreen> {
                                           "Qty: ${item.productQty} × ${item.productPrice}",
                                         ),
                                         Text(
-                                          "\u{20b9} ${(double.parse(item.productPrice.toString()) * double.parse(item.productQty.toString())).toStringAsFixed(2)}",
+                                          "\u{20b9} ${(int.tryParse(item.productPrice?.toString() ?? '0') ?? 0) * (int.tryParse(item.productQty?.toString() ?? '0') ?? 0)}",
                                         ),
                                       ],
                                     ),
@@ -254,115 +319,127 @@ class _CartScreenState extends State<CartScreen> {
                       },
                     ),
                   ),
-                  Padding(padding: EdgeInsetsGeometry.all(8),child: Card(
-                    color: Colors.white,
-                    child: DottedBorder(
-                      options: RectDottedBorderOptions(
-                        dashPattern: [5, 4], // Length of dash, length of space
-                        strokeWidth: 1,
-                        color: Colors.black,
-                        padding: EdgeInsets.all(8),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsetsGeometry.all(8),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(8),
-                              child: Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceAround,
-                                children: [
-                                  Text(
-                                    "Amount",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
+                  Padding(
+                    padding: EdgeInsetsGeometry.all(8),
+                    child: Card(
+                      color: Colors.white,
+                      child: DottedBorder(
+                        options: RectDottedBorderOptions(
+                          dashPattern: [
+                            5,
+                            4,
+                          ], // Length of dash, length of space
+                          strokeWidth: 1,
+                          color: Colors.black,
+                          padding: EdgeInsets.all(8),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsetsGeometry.all(8),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      "Amount",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                  Spacer(),
-                                  Text(
-                                    " \u{20b9}$totalPrice",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
+                                    Spacer(),
+                                    Text(
+                                      " \u{20b9}$totalPrice",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(8),
-                              child: Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceAround,
-                                children: [
-                                  Text(
-                                    "Delivery Charges",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      "Delivery Charges",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                  Spacer(),
-                                  Text(
-                                    "\u{20b9} 50",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
+                                    Spacer(),
+                                    Text(
+                                      "\u{20b9} 50",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(8),
-                              child: Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceAround,
-                                children: [
-                                  Text(
-                                    "Total Amount",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      "Total Amount",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  Spacer(),
-                                  Text(
-                                    "\u{20b9} ${totalPrice + 50}",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                    Spacer(),
+                                    Text(
+                                      "\u{20b9} ${totalPrice + 50}",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  )),
+                  ),
                   Container(
                     width: double.infinity,
                     height: 50,
                     margin: EdgeInsets.all(8),
                     child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
-                            shape: RoundedRectangleBorder(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
-                        )),
-                        onPressed: (){}, child: Text("Proceed",style: TextStyle(color: Colors.white))),
+                        ),
+                      ),
+                      onPressed: () {
+                        startTransaction(totalPrice.toDouble());
+                      },
+                      child: Text(
+                        "Proceed",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
+                  SizedBox(height: 20),
                 ],
               ),
             );

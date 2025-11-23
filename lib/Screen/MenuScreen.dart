@@ -181,10 +181,9 @@ class MenuScreen extends StatelessWidget {
               child: ListTile(
                 onTap: () async {
                   await localStorage.resetUID();
-                  await localStorage.resetToken();
-                  if (context.mounted) {
+                  await localStorage.resetToken().whenComplete((){
                     context.pushReplace(AppRoutes.login);
-                  }
+                  });
                 },
                 leading: CircleAvatar(child: Icon(Icons.logout)),
                 title: Text(

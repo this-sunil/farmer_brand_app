@@ -57,6 +57,28 @@ class Result {
     this.createdAt,
   });
 
+  Result copyWith({
+    int? pid,
+    int? productQty,
+    String? productDesc,
+    String? productPhoto,
+    int? productPrice,
+    int? productStock,
+    String? productTitle,
+    String? productWeight,
+  }) {
+    return Result(
+      pid: pid ?? this.pid,
+      productQty: productQty ?? this.productQty,
+      productDesc: productDesc ?? this.productDesc,
+      productPhoto: productPhoto ?? this.productPhoto,
+      productPrice: productPrice ?? this.productPrice,
+      productStock: productStock ?? this.productStock,
+      productTitle: productTitle ?? this.productTitle,
+      productWeight: productWeight ?? this.productWeight,
+    );
+  }
+
   factory Result.fromJson(Map<String, dynamic> json) => Result(
     pid: json["pid"],
     productTitle: json["product_title"],

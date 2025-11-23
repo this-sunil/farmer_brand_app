@@ -64,49 +64,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         centerTitle: false,
-        titleSpacing: 1.0,
-        title: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            switch (state.status) {
-              case AuthStatus.fetch:
-                return Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ShaderMask(
-                        shaderCallback: (bounds) =>
-                            LinearGradient(
-                              colors: [
-                                Colors.blue,
-                                Colors.purple,
-                                Colors.pink,
-                                Colors.purple,
-                              ],
-                            ).createShader(
-                              Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                            ),
-                        blendMode: BlendMode.srcIn,
-                        child: Text(
-                          currentIndex==0?'Hi,${state.result?.result?.name}':currentIndex==1?'Our Farmer':currentIndex==2?'Cart':'Setting',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
 
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+        title:  ShaderMask(
+          shaderCallback: (bounds) =>
+              LinearGradient(
+                colors: [
+                  Colors.blue,
+                  Colors.purple,
+                  Colors.pink,
+                  Colors.purple,
+                ],
+              ).createShader(
+                Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+              ),
+          blendMode: BlendMode.srcIn,
+          child: Text(
+            'Farmer Brand',
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 18,
 
-
-                      const SizedBox(height: 10),
-                    ],
-                  ),
-                );
-              default:
-                return Container();
-            }
-          },
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
 
         actions: [

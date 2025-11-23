@@ -17,3 +17,4 @@ class AddQuantity extends ProductEvent{
   List<Object?> get props => [qty,pid];
 
 }
+

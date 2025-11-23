@@ -30,7 +30,7 @@ class CartRepository implements BaseCartRepo{
         case 400:
         case 404:
         case 500:
-        return Left(Failure(status: CartStatus.error,msg: result.msg));
+          return Left(Failure(status: CartStatus.error,msg: result.msg));
         default:
           return Left(Failure(status: CartStatus.error,msg: result.msg));
       }
