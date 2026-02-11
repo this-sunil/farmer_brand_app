@@ -1,11 +1,12 @@
-# 🚗 Car Wash Service
+# 🌾 Farmer Brand
 
-### Flutter + Node.js Full-Stack Booking Application
+### Flutter + Node.js Agriculture Marketplace Platform
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![Dart](https://img.shields.io/badge/Dart-2.x-0175C2?logo=dart)
 ![Node.js](https://img.shields.io/badge/Node.js-18.x-green?logo=node.js)
 ![Express.js](https://img.shields.io/badge/Express.js-Backend-black?logo=express)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-green?logo=mongodb)
 ![Firebase](https://img.shields.io/badge/Firebase-Integrated-FFCA28?logo=firebase)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -14,112 +15,121 @@
 
 ## 📌 Project Overview
 
-A production-ready **Car Wash Service Booking Platform** built using **Flutter (Frontend)** and **Node.js + Express (Backend)**.
+**Farmer Brand** is a full-stack agriculture marketplace platform built with **Flutter (Frontend)** and **Node.js + Express (Backend)**.
 
-This system provides:
-
-- 🔐 Secure OTP-based authentication  
-- 📅 Real-time appointment booking  
-- 🔔 Push notifications  
-- 🌍 Multilingual support (online & offline)  
-- 📶 Connectivity-aware user experience  
+The platform enables farmers to sell products directly to customers, manage inventory, and handle orders efficiently with secure authentication and real-time updates.
 
 ---
 
-## 🚀 Features
+## 🚀 Core Features
 
 ### 🔐 Authentication & Security
 
 - JWT-based authentication  
 - bcrypt password hashing  
-- Phone number OTP verification  
-- SMS-based OTP integration  
-- Role-based access control  
-- Secure JWT middleware validation  
+- OTP login with phone verification  
+- Role-based access (Farmer / Customer / Admin)  
+- Secure middleware route protection  
 
 ---
 
-### 📱 Frontend (Flutter)
+### 🌾 Farmer Module
 
-- Ripple animations for enhanced UX  
-- Phone number authentication with OTP  
-- Google ML Kit Translation  
-  - Real-time on-device translation  
-  - Offline language support  
-- Internet connectivity handling  
-  - Online/offline detection  
-  - Graceful fallback UX  
-- Advanced search functionality  
-  - Search services, vehicles, bookings  
-  - Optimized for large datasets  
+- Add agricultural products  
+- Upload product images  
+- Manage pricing & stock  
+- Update product availability  
+- Track incoming orders  
+- Dashboard for sales overview  
+
+---
+
+### 🛒 Customer Module
+
+- Browse products by category  
+- Search products (keyword-based search)  
+- View product details  
+- Add to cart  
+- Place orders  
+- Track order status  
+
+---
+
+### 📦 Order Management
+
+- Real-time order creation  
+- Order status tracking:
+  - 🟡 Pending  
+  - 🔵 Confirmed  
+  - 🚚 Shipped  
+  - 🟢 Delivered  
+  - 🔴 Cancelled  
+- Inventory auto-update after purchase  
+
+---
+
+### 📱 Flutter Frontend
+
+- Clean and responsive UI  
+- Connectivity-aware UX (online/offline handling)  
+- Advanced search optimization  
+- State management integration  
+- Smooth navigation flow  
+- Secure token storage  
 
 ---
 
 ### 🧠 Backend (Node.js + Express)
 
 - RESTful API architecture  
-- JWT & OTP verification endpoints  
-- Multer integration for secure file uploads  
-  - Profile images  
-  - Vehicle documents  
-- Search APIs (keyword & filter-based)  
-- Appointment & time-slot management  
-  - Date-wise availability  
-  - Slot locking to prevent double bookings  
+- Product CRUD APIs  
+- Order management APIs  
+- Image upload using Multer  
+- MongoDB database integration  
+- Admin monitoring routes  
 
 ---
 
-## 📅 Appointment Booking System
+### 🔔 Notifications
 
-Users can:
-
-- Select preferred date  
-- Choose available time slot  
-- Book specific vehicle services  
-
-### Appointment Status Tracking
-
-- 🟡 Pending  
-- 🔵 Confirmed  
-- 🟢 Completed  
-- 🔴 Cancelled  
-
-Includes:
-
-- Slot availability validation  
-- Real-time scheduling logic  
-- Double-booking prevention  
+- Push notifications for:
+  - New orders  
+  - Order confirmation  
+  - Delivery updates  
+- Firebase integration for device token handling  
 
 ---
 
-## 🔔 Notifications
+## 🏗️ Architecture Overview
 
-- OneSignal Push Notifications  
-  - Booking confirmation  
-  - Appointment reminders  
-  - Status updates  
-- Firebase Integration  
-  - OTP verification  
-  - Device token management  
-  - Notification routing  
+```
+Flutter App
+     ↓ REST API
+Node.js + Express
+     ↓
+MongoDB Database
+     ↓
+Firebase Services
+```
+
+- Modular backend structure  
+- Scalable API design  
+- Secure token-based communication  
 
 ---
-
-
 
 ## 🛠️ Tech Stack
 
 ### 🎨 Frontend
 - Flutter  
 - Dart  
-- Google ML Kit  
-- Firebase Authentication  
-- OneSignal  
+- Firebase  
 - Connectivity Plus  
 
 ### ⚙️ Backend
 - Node.js  
 - Express.js  
+- MongoDB  
 - JWT  
 - bcrypt  
 - Multer  
@@ -127,13 +137,13 @@ Includes:
 
 ---
 
-## 🎯 Key Achievements
+## 🎯 Key Outcomes
 
-- Secure OTP + JWT authentication flow  
-- Real-time booking with slot validation  
-- Multilingual experience with offline intelligence  
-- Production-ready scalable architecture  
-- Reliable push notification lifecycle  
+- Direct farmer-to-customer selling model  
+- Secure authentication & role management  
+- Real-time order lifecycle tracking  
+- Inventory management system  
+- Scalable marketplace architecture  
 
 ---
 
